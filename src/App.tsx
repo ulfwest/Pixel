@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
 import { MousePointerClick, Info, ArrowRight, CheckCircle2, X, ZoomIn, ZoomOut, Maximize } from 'lucide-react';
+import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 
 type Block = {
   id: string;
@@ -173,8 +174,7 @@ export default function App() {
     }
   };
 
-  const handleBuy = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handlePaymentSuccess = () => {
     if (!selectedCell) return;
 
     const newBlock: Block = {
@@ -195,7 +195,10 @@ export default function App() {
     setFormData({ title: '', link: '', color: '#FF6321', imageUrl: '' });
   };
 
+  const isFormValid = formData.title.trim() !== '' && formData.link.trim() !== '';
+
   return (
+    <PayPalScriptProvider options={{ clientId: "test", currency: "EUR" }}>
     <div className="min-h-screen bg-[#050B14] text-white font-sans selection:bg-[#00F0FF] selection:text-black relative">
       {/* Pixel Background */}
       <div 
@@ -427,7 +430,7 @@ export default function App() {
             </div>
           </div>
 
-          <form onSubmit={handleBuy} className="space-y-6">
+          <form className="space-y-6">
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-white/50 mb-2">Werbetitel</label>
               <input 
@@ -481,12 +484,36 @@ export default function App() {
               </div>
             </div>
 
-            <button 
-              type="submit"
-              className="w-full py-4 bg-[#00F0FF] text-black font-bold rounded-lg hover:bg-white shadow-[0_0_20px_rgba(0,240,255,0.3)] hover:shadow-[0_0_30px_rgba(0,240,255,0.5)] transition-all flex items-center justify-center gap-2 mt-8"
-            >
-              <CheckCircle2 className="w-5 h-5" /> Kauf bestätigen
-            </button>
+            <div className="mt-8">
+              {!isFormValid && (
+                <p className="text-sm text-red-400 mb-4">Bitte fülle Werbetitel und Ziel-URL aus, um fortzufahren.</p>
+              )}
+              <div className={!isFormValid ? "opacity-50 pointer-events-none" : ""}>
+                <PayPalButtons 
+                  style={{ layout: "vertical", color: "blue" }}
+                  createOrder={(data, actions) => {
+                    return actions.order.create({
+                      intent: "CAPTURE",
+                      purchase_units: [
+                        {
+                          description: `PixelBlock: ${formData.title}`,
+                          amount: {
+                            currency_code: "EUR",
+                            value: "10.00",
+                          },
+                        },
+                      ],
+                    });
+                  }}
+                  onApprove={async (data, actions) => {
+                    if (actions.order) {
+                      await actions.order.capture();
+                      handlePaymentSuccess();
+                    }
+                  }}
+                />
+              </div>
+            </div>
           </form>
         </motion.div>
       )}
@@ -553,5 +580,6 @@ export default function App() {
         </div>
       )}
     </div>
+    </PayPalScriptProvider>
   );
 }
