@@ -36,25 +36,18 @@ export default function App() {
   });
 
   useEffect(() => {
-    const saved = localStorage.getItem('pixelBlocks');
+    const saved = localStorage.getItem('pixelBlocks_v4');
     if (saved) {
       try {
         setBlocks(JSON.parse(saved));
       } catch (e) {
         console.error('Failed to parse blocks', e);
       }
-    } else {
-      // Add some dummy data
-      const initialBlocks: Block[] = [
-        { id: '1', x: 45, y: 45, w: 10, h: 10, color: '#00F0FF', title: 'Mittelstück', link: 'https://example.com' },
-        { id: '2', x: 10, y: 10, w: 5, h: 5, color: '#FF00FF', title: 'Neon Pink', link: 'https://example.com' },
-      ];
-      setBlocks(initialBlocks);
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('pixelBlocks', JSON.stringify(blocks));
+    localStorage.setItem('pixelBlocks_v4', JSON.stringify(blocks));
     drawGrid();
   }, [blocks, selectedCell]);
 
@@ -184,8 +177,8 @@ export default function App() {
       w: 1, // Default to 1x1 block for now
       h: 1,
       color: formData.color,
-      title: formData.title || 'Mein Pixel',
-      link: formData.link || 'https://',
+      title: formData.title,
+      link: formData.link,
       imageUrl: formData.imageUrl,
     };
 
@@ -218,14 +211,11 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 bg-[#00F0FF] rounded-sm shadow-[0_0_10px_rgba(0,240,255,0.5)]"></div>
-            <span className="font-mono font-bold tracking-tight text-lg uppercase">PixelBlock</span>
+            <span className="font-mono font-bold tracking-tight text-lg uppercase">my-pixel.click</span>
           </div>
           <nav className="flex items-center gap-6 text-sm font-medium text-white/60">
             <a href="#about" className="hover:text-white transition-colors">So funktioniert's</a>
             <a href="#grid" className="hover:text-white transition-colors">Das Raster</a>
-            <button className="px-4 py-2 bg-white text-black rounded-full hover:bg-[#00F0FF] hover:shadow-[0_0_15px_rgba(0,240,255,0.4)] transition-all font-semibold">
-              Wallet verbinden
-            </button>
           </nav>
         </div>
       </header>
@@ -248,8 +238,8 @@ export default function App() {
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-[#00F0FF]/60">des Internets.</span>
             </h1>
             <p className="text-xl text-[#00F0FF] drop-shadow-[0_0_10px_rgba(0,240,255,0.4)] mb-10 max-w-2xl mx-auto font-light">
-              Kaufe Pixel, platziere deine Werbung und werde Teil der digitalen Geschichte. 
-              Jeder Block ist 10x10 Pixel groß. Einmal gekauft, gehört er für immer dir.
+              Spende für Pixel, platziere deine Werbung und werde Teil der digitalen Geschichte. 
+              Jeder Block ist 10x10 Pixel groß. Einmal gespendet, gehört er für immer dir.
             </p>
             <div className="flex items-center justify-center gap-4">
               <a href="#grid" className="px-8 py-4 bg-[#00F0FF] text-black font-bold rounded-full hover:bg-white shadow-[0_0_20px_rgba(0,240,255,0.3)] hover:shadow-[0_0_30px_rgba(0,240,255,0.5)] transition-all flex items-center gap-2">
@@ -280,7 +270,7 @@ export default function App() {
           </div>
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#00F0FF]/30 bg-[#00F0FF]/10 text-[#00F0FF] text-xs font-mono shadow-[0_0_15px_rgba(0,240,255,0.2)] uppercase tracking-widest">
             <span className="w-2 h-2 rounded-full bg-[#00F0FF] animate-pulse shadow-[0_0_8px_rgba(0,240,255,0.8)]"></span>
-            Preis: 10 € pro Block (10x10)
+            Spende: 10 € pro Block (10x10)
           </div>
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#00F0FF]/30 bg-[#00F0FF]/10 text-[#00F0FF] text-xs font-mono shadow-[0_0_15px_rgba(0,240,255,0.2)] uppercase tracking-widest">
             <span className="w-2 h-2 rounded-full bg-[#00F0FF] animate-pulse shadow-[0_0_8px_rgba(0,240,255,0.8)]"></span>
@@ -292,7 +282,7 @@ export default function App() {
           </div>
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#00F0FF]/30 bg-[#00F0FF]/10 text-[#00F0FF] text-xs font-mono shadow-[0_0_15px_rgba(0,240,255,0.2)] uppercase tracking-widest">
             <span className="w-2 h-2 rounded-full bg-[#00F0FF] animate-pulse shadow-[0_0_8px_rgba(0,240,255,0.8)]"></span>
-            Preis: 10 € pro Block (10x10)
+            Spende: 10 € pro Block (10x10)
           </div>
         </motion.div>
       </div>
@@ -326,7 +316,7 @@ export default function App() {
               </div>
               <div className="bg-[#0A101A] border border-[#00F0FF]/20 p-6 rounded-xl hover:shadow-[0_0_20px_rgba(0,240,255,0.15)] transition-shadow">
                 <div className="text-3xl font-bold text-[#00F0FF] mb-2 drop-shadow-[0_0_8px_rgba(0,240,255,0.5)]">10 €</div>
-                <div className="text-sm text-white/50 uppercase tracking-wider font-mono">Pro Block (10x10)</div>
+                <div className="text-sm text-white/50 uppercase tracking-wider font-mono">Spende pro Block</div>
               </div>
               <div className="bg-[#0A101A] border border-[#00F0FF]/20 p-6 rounded-xl hover:shadow-[0_0_20px_rgba(0,240,255,0.15)] transition-shadow">
                 <div className="text-3xl font-bold text-[#00F0FF] mb-2 drop-shadow-[0_0_8px_rgba(0,240,255,0.5)]">🖼️</div>
@@ -348,7 +338,7 @@ export default function App() {
             <h2 className="text-3xl font-bold tracking-tight text-[#00F0FF] drop-shadow-[0_0_10px_rgba(0,240,255,0.5)]">Das Raster</h2>
             <div className="flex flex-col lg:flex-row items-end lg:items-center gap-3">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#00F0FF]/30 bg-[#00F0FF]/10 text-[#00F0FF] text-xs font-mono shadow-[0_0_15px_rgba(0,240,255,0.2)] uppercase">
-                <MousePointerClick className="w-3.5 h-3.5" /> Klicke auf einen leeren Block, um ihn zu kaufen
+                <MousePointerClick className="w-3.5 h-3.5" /> Klicke auf einen leeren Block, um ihn durch eine Spende zu beanspruchen
               </div>
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#00F0FF]/30 bg-[#00F0FF]/10 text-[#00F0FF] text-xs font-mono shadow-[0_0_15px_rgba(0,240,255,0.2)] uppercase">
                 <Info className="w-3.5 h-3.5" /> Klicke auf einen gefüllten Block, um ihn zu besuchen
@@ -425,7 +415,7 @@ export default function App() {
               <span>10x10 Pixel</span>
             </div>
             <div className="flex justify-between text-[#00F0FF] drop-shadow-[0_0_5px_rgba(0,240,255,0.5)]">
-              <span>Preis</span>
+              <span>Spende</span>
               <span>10,00 €</span>
             </div>
           </div>
@@ -439,7 +429,7 @@ export default function App() {
                 value={formData.title}
                 onChange={(e) => setFormData({...formData, title: e.target.value})}
                 className="w-full bg-[#050B14] border border-[#00F0FF]/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#00F0FF] focus:shadow-[0_0_15px_rgba(0,240,255,0.2)] transition-all"
-                placeholder="Mein tolles Projekt"
+                placeholder="Titel eingeben"
               />
             </div>
             
@@ -462,7 +452,7 @@ export default function App() {
                 value={formData.imageUrl}
                 onChange={(e) => setFormData({...formData, imageUrl: e.target.value})}
                 className="w-full bg-[#050B14] border border-[#00F0FF]/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#00F0FF] focus:shadow-[0_0_15px_rgba(0,240,255,0.2)] transition-all"
-                placeholder="https://example.com/image.png"
+                placeholder="Bild-URL eingeben"
               />
             </div>
 
@@ -490,13 +480,13 @@ export default function App() {
               )}
               <div className={!isFormValid ? "opacity-50 pointer-events-none" : ""}>
                 <PayPalButtons 
-                  style={{ layout: "vertical", color: "blue" }}
+                  style={{ layout: "vertical", color: "blue", label: "donate" }}
                   createOrder={(data, actions) => {
                     return actions.order.create({
                       intent: "CAPTURE",
                       purchase_units: [
                         {
-                          description: `PixelBlock: ${formData.title}`,
+                          description: `my-pixel.click Spende: ${formData.title}`,
                           amount: {
                             currency_code: "EUR",
                             value: "10.00",
@@ -523,9 +513,9 @@ export default function App() {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 bg-[#00F0FF] rounded-sm shadow-[0_0_10px_rgba(0,240,255,0.5)]"></div>
-            <span className="font-mono font-bold tracking-tight uppercase">PixelBlock</span>
+            <span className="font-mono font-bold tracking-tight uppercase">my-pixel.click</span>
           </div>
-          <p className="text-white/40 text-sm">© 2026 PixelBlock. Alle Rechte vorbehalten.</p>
+          <p className="text-white/40 text-sm">© 2026 my-pixel.click. Alle Rechte vorbehalten.</p>
         </div>
       </footer>
       </div>
