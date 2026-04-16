@@ -23,6 +23,7 @@ export default function App() {
   const [selectedCell, setSelectedCell] = useState<{ x: number; y: number } | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [popupBlock, setPopupBlock] = useState<Block | null>(null);
+  const [isDisclaimerOpen, setIsDisclaimerOpen] = useState(false);
   const [scale, setScale] = useState(1);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -515,10 +516,66 @@ export default function App() {
             <div className="w-4 h-4 bg-[#00F0FF] rounded-sm shadow-[0_0_10px_rgba(0,240,255,0.5)]"></div>
             <span className="font-mono font-bold tracking-tight uppercase">my-pixel.click</span>
           </div>
-          <p className="text-white/40 text-sm">© 2026 my-pixel.click. Alle Rechte vorbehalten.</p>
+          <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8">
+            <button 
+              onClick={() => setIsDisclaimerOpen(true)} 
+              className="text-white/40 text-sm hover:text-white transition-colors underline decoration-white/20 underline-offset-4"
+            >
+              Haftungsausschluss & Disclaimer
+            </button>
+            <p className="text-white/40 text-sm">© 2026 my-pixel.click. Alle Rechte vorbehalten.</p>
+          </div>
         </div>
       </footer>
       </div>
+
+      {/* Legal Disclaimer Modal */}
+      {isDisclaimerOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 text-left" onClick={() => setIsDisclaimerOpen(false)}>
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-[#0A101A] border border-[#00F0FF]/30 rounded-xl p-8 max-w-2xl w-full shadow-[0_0_40px_rgba(0,240,255,0.15)] relative max-h-[80vh] overflow-y-auto"
+            onClick={e => e.stopPropagation()}
+          >
+            <button 
+              onClick={() => setIsDisclaimerOpen(false)}
+              className="absolute top-4 right-4 text-white/50 hover:text-[#00F0FF] transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            
+            <h3 className="text-2xl font-bold text-[#00F0FF] mb-6 pr-8">Haftungsausschluss & Disclaimer</h3>
+            
+            <div className="space-y-6 text-white/70 text-sm leading-relaxed">
+              <div>
+                <h4 className="text-white font-bold mb-2">1. Haftung für Inhalte</h4>
+                <p>Als Diensteanbieter sind wir für eigene Inhalte auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich. Wir sind jedoch nicht verpflichtet, übermittelte oder gespeicherte fremde Informationen zu überwachen oder nach Umständen zu forschen, die auf eine rechtswidrige Tätigkeit hinweisen.</p>
+              </div>
+              
+              <div>
+                <h4 className="text-white font-bold mb-2">2. Haftung für Links & Nutzerinhalte (User-Generated Content)</h4>
+                <p>Unser Informationsangebot und Projekt "my-pixel.click" enthält und basiert fundamental auf Links zu externen Websites Dritter ("Pixel-Blöcke"), auf deren Inhalte wir keinen Einfluss haben. Deshalb können wir für diese fremden Inhalte auch keine Gewähr übernehmen, sondern distanzieren uns ausdrücklich davon. Für die Inhalte der verlinkten Seiten sowie die hochgeladenen Bilder und Texte ist stets der jeweilige Nutzer oder Betreiber der Seiten verantwortlich. Eine permanente inhaltliche Kontrolle der verlinkten und angezeigten Inhalte ist ohne konkrete Anhaltspunkte einer Rechtsverletzung nicht zumutbar. Bei Bekanntwerden von Rechtsverletzungen werden wir derartige Links und Inhalte umgehend entfernen.</p>
+              </div>
+              
+              <div>
+                <h4 className="text-white font-bold mb-2">3. Löschungsrecht</h4>
+                <p>Wir behalten uns ausdrücklich das Recht vor, Pixel-Blöcke (inkl. Bilder, Titel und Links) ohne vorherige Ankündigung zu löschen oder abzuändern, wenn diese gegen geltendes deutsches oder internationales Recht, die guten Sitten verstoßen oder pornografische, rassistische sowie gewaltverherrlichende Inhalte aufweisen. In einem solchen Fall besteht ausdrücklich kein Anspruch auf jegliche Erstattung oder Wiederherstellung.</p>
+              </div>
+
+              <div>
+                <h4 className="text-white font-bold mb-2">4. Keine finanzielle Gegenleistung</h4>
+                <p>Bei der Bezahlung von Pixeln auf dieser Plattform handelt es sich um eine freiwillige Spende zur Unterstützung des Projektes. Es entsteht durch die Spende kein rechtlich bindender Anspruch auf eine dauerhafte Verfügbarkeit der Webseite, eine zugesicherte Laufzeit oder auf die Zuteilung eines kommerziellen Nutzens (z.B. Werbung). my-pixel.click ist ein Kunst- und Experimentierprojekt.</p>
+              </div>
+
+              <div>
+                <h4 className="text-white font-bold mb-2">5. Urheberrecht</h4>
+                <p>Die durch uns erstellten Webseiten-Inhalte unterliegen dem deutschen Urheberrecht. Die Vervielfältigung, Bearbeitung, Verbreitung und jede Art der Verwertung bedürfen der schriftlichen Zustimmung. Bei allen von Nutzern hochgeladenen Bildinhalten sowie Texten stellen die jeweiligen Eigner sicher, dass sie über die notwendigen Urheberrechts-Lizenzen verfügen; bei Verstößen haftet alleinig der publizierende Nutzer.</p>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
 
       {/* Popup for Existing Block */}
       {popupBlock && (
