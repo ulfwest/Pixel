@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { motion } from 'motion/react';
-import { MousePointerClick, Info, ArrowRight, CheckCircle2, X, ZoomIn, ZoomOut, Maximize, Plus, Minus, Volume2, VolumeX } from 'lucide-react';
+import { MousePointerClick, Info, ArrowRight, CheckCircle2, X, ZoomIn, ZoomOut, Maximize, Plus, Minus, Volume2, VolumeX, Share2 } from 'lucide-react';
 
 type Block = {
   id: string;
@@ -35,6 +35,7 @@ export default function App() {
   const isDraggingRef = useRef(false);
 
   const [hasClickedDonate, setHasClickedDonate] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -347,6 +348,17 @@ export default function App() {
     } else {
       setResizeError("Nicht genug Platz! Überschneidung mit anderen Blöcken oder dem Rand.");
       setTimeout(() => setResizeError(null), 3000);
+    }
+  };
+
+  const handleShare = async () => {
+    if (!popupBlock) return;
+    try {
+      await navigator.clipboard.writeText(popupBlock.link);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy', err);
     }
   };
 
@@ -938,70 +950,84 @@ export default function App() {
         </div>
       )}
 
-      {/* Popup for Existing Block */}
+    {/* Popup for Existing Block */}
       {popupBlock && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setPopupBlock(null)}>
           <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-[#0A101A] border border-[#00F0FF]/30 rounded-xl p-6 max-w-md w-full shadow-[0_0_40px_rgba(0,240,255,0.15)] relative"
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="bg-[#0A101A] border border-[#00F0FF]/30 rounded-2xl p-0 max-w-lg w-full shadow-[0_0_50px_rgba(0,240,255,0.15)] relative overflow-hidden flex flex-col"
             onClick={e => e.stopPropagation()}
           >
             <button 
               onClick={() => setPopupBlock(null)}
-              className="absolute top-4 right-4 text-white/50 hover:text-[#00F0FF] transition-colors"
+              className="absolute top-4 right-4 text-white/70 hover:text-white bg-black/50 hover:bg-black/80 p-2 rounded-full transition-all z-10 backdrop-blur-md"
             >
               <X className="w-5 h-5" />
             </button>
             
-            <h3 className="text-2xl font-bold text-white mb-4 pr-8">{popupBlock.title}</h3>
-            
-            <div className="aspect-video w-full rounded-lg mb-6 overflow-hidden bg-[#050B14] border border-white/10 flex items-center justify-center relative group">
+            {/* Expanded Image Area */}
+            <div className="w-full h-64 sm:h-80 bg-[#050B14] relative flex items-center justify-center group border-b border-white/5">
               {popupBlock.imageUrl ? (
-                <img src={popupBlock.imageUrl} alt={popupBlock.title} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                <img src={popupBlock.imageUrl} alt={popupBlock.title} className="w-full h-full object-contain p-4" referrerPolicy="no-referrer" />
               ) : (
                 <div 
-                  className="w-full h-full opacity-50" 
-                  style={{ backgroundColor: popupBlock.color }}
+                  className="w-full h-full opacity-30 pattern-dots" 
+                  style={{ backgroundColor: popupBlock.color, backgroundImage: 'radial-gradient(rgba(255,255,255,0.2) 1px, transparent 1px)', backgroundSize: '20px 20px' }}
                 ></div>
               )}
-              <a 
-                href={popupBlock.link} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm"
-              >
-                <span className="px-6 py-3 bg-[#00F0FF] text-black font-bold rounded-full flex items-center gap-2 shadow-[0_0_20px_rgba(0,240,255,0.5)]">
-                  Besuchen <ArrowRight className="w-4 h-4" />
-                </span>
-              </a>
+              
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0A101A] via-transparent to-transparent opacity-80 pointer-events-none" />
             </div>
             
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center justify-between text-sm font-mono text-white/50 bg-white/5 p-4 rounded-lg border border-white/10">
-                <div className="flex flex-col gap-2">
-                  <span>Block: {popupBlock.x}, {popupBlock.y}</span>
-                  <div className="flex items-center gap-2">
-                    <span>Farbe:</span>
-                    <div className="w-4 h-4 rounded-sm" style={{ backgroundColor: popupBlock.color }}></div>
+            {/* Content Area */}
+            <div className="p-6 md:p-8 flex flex-col gap-6 relative">
+              
+              {/* Header: Title and Link */}
+              <div className="flex flex-col gap-3">
+                <h3 className="text-3xl font-black text-white leading-tight pr-8 tracking-tight">{popupBlock.title}</h3>
+                <a 
+                  href={popupBlock.link} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-[#00F0FF] hover:text-white transition-colors w-fit group/link"
+                >
+                  <span className="font-mono text-sm truncate max-w-[280px] sm:max-w-[350px] bg-[#00F0FF]/10 px-3 py-1.5 rounded-md border border-[#00F0FF]/20 group-hover/link:bg-[#00F0FF]/20">{popupBlock.link}</span>
+                  <ArrowRight className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" />
+                </a>
+              </div>
+              
+              {/* Details & Controls */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-between bg-white/5 p-4 rounded-xl border border-white/10 mt-2">
+                <div className="flex flex-col justify-between gap-3">
+                  <div className="flex items-center gap-2 text-sm font-mono text-white/60">
+                    <span className="bg-[#050B14] px-2 py-1 rounded">X: {popupBlock.x}</span>
+                    <span className="bg-[#050B14] px-2 py-1 rounded">Y: {popupBlock.y}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs uppercase tracking-wider text-white/40 font-bold">Farbe</span>
+                    <div className="w-6 h-6 rounded-full border border-white/20 shadow-inner" style={{ backgroundColor: popupBlock.color }}></div>
                   </div>
                 </div>
                 
-                <div className="flex flex-col gap-2 items-end">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs uppercase tracking-wider">Breite:</span>
-                    <div className="flex items-center gap-1 bg-[#050B14] p-1 rounded border border-white/10">
-                      <button onClick={() => handleResize(-1, 0)} className="hover:text-[#00F0FF] disabled:opacity-50 disabled:hover:text-white/50 p-0.5 transition-colors" disabled={popupBlock.w <= 1}><Minus className="w-3 h-3" /></button>
-                      <span className="w-6 text-center text-white">{popupBlock.w}</span>
-                      <button onClick={() => handleResize(1, 0)} className="hover:text-[#00F0FF] p-0.5 transition-colors"><Plus className="w-3 h-3" /></button>
+                {/* Resizing Controls */}
+                <div className="flex flex-col gap-3 border-t sm:border-t-0 sm:border-l border-white/10 pt-3 sm:pt-0 sm:pl-4">
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex justify-between items-center gap-4">
+                      <span className="text-xs uppercase tracking-wider text-white/50">Breite</span>
+                      <div className="flex items-center gap-2 bg-[#050B14] px-1 py-0.5 rounded border border-white/5">
+                        <button onClick={() => handleResize(-1, 0)} className="text-white/40 hover:text-[#00F0FF] disabled:opacity-30 p-1 transition-colors" disabled={popupBlock.w <= 1}><Minus className="w-3 h-3" /></button>
+                        <span className="w-6 text-center text-white font-mono text-sm">{popupBlock.w}</span>
+                        <button onClick={() => handleResize(1, 0)} className="text-white/40 hover:text-[#00F0FF] p-1 transition-colors"><Plus className="w-3 h-3" /></button>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs uppercase tracking-wider">Höhe:</span>
-                    <div className="flex items-center gap-1 bg-[#050B14] p-1 rounded border border-white/10">
-                      <button onClick={() => handleResize(0, -1)} className="hover:text-[#00F0FF] disabled:opacity-50 disabled:hover:text-white/50 p-0.5 transition-colors" disabled={popupBlock.h <= 1}><Minus className="w-3 h-3" /></button>
-                      <span className="w-6 text-center text-white">{popupBlock.h}</span>
-                      <button onClick={() => handleResize(0, 1)} className="hover:text-[#00F0FF] p-0.5 transition-colors"><Plus className="w-3 h-3" /></button>
+                    <div className="flex justify-between items-center gap-4">
+                      <span className="text-xs uppercase tracking-wider text-white/50">Höhe</span>
+                      <div className="flex items-center gap-2 bg-[#050B14] px-1 py-0.5 rounded border border-white/5">
+                        <button onClick={() => handleResize(0, -1)} className="text-white/40 hover:text-[#00F0FF] disabled:opacity-30 p-1 transition-colors" disabled={popupBlock.h <= 1}><Minus className="w-3 h-3" /></button>
+                        <span className="w-6 text-center text-white font-mono text-sm">{popupBlock.h}</span>
+                        <button onClick={() => handleResize(0, 1)} className="text-white/40 hover:text-[#00F0FF] p-1 transition-colors"><Plus className="w-3 h-3" /></button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1009,13 +1035,36 @@ export default function App() {
               
               {resizeError && (
                 <motion.div 
-                  initial={{ opacity: 0, y: -10 }}
+                  initial={{ opacity: 0, y: 5 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-xs text-red-400 bg-red-400/10 p-2 rounded border border-red-400/20 text-center"
+                  className="text-xs text-red-400 bg-red-400/10 p-3 rounded-lg border border-red-400/20 flex items-center justify-center font-medium"
                 >
                   {resizeError}
                 </motion.div>
               )}
+              
+              {/* Actions */}
+              <div className="flex gap-3 mt-2">
+                <button
+                  onClick={handleShare}
+                  className="px-5 py-4 bg-[#050B14] border border-white/10 text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-white/5 hover:border-[#00F0FF]/50 transition-all group relative shadow-inner"
+                  title="URL kopieren"
+                >
+                  {isCopied ? (
+                    <CheckCircle2 className="w-5 h-5 text-[#00F0FF]" />
+                  ) : (
+                    <Share2 className="w-5 h-5 text-white/70 group-hover:text-[#00F0FF]" />
+                  )}
+                </button>
+                <a 
+                  href={popupBlock.link} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex-1 py-4 bg-[#00F0FF] text-black font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-white hover:shadow-[0_0_30px_rgba(0,240,255,0.6)] transition-all uppercase tracking-wide"
+                >
+                  Website Besuchen <ArrowRight className="w-5 h-5" />
+                </a>
+              </div>
             </div>
           </motion.div>
         </div>
