@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { motion } from 'motion/react';
-import { MousePointerClick, Info, ArrowRight, CheckCircle2, X, ZoomIn, ZoomOut, Maximize, Plus, Minus } from 'lucide-react';
-import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
+import { MousePointerClick, Info, ArrowRight, CheckCircle2, X, ZoomIn, ZoomOut, Maximize, Plus, Minus, Volume2, VolumeX } from 'lucide-react';
 
 type Block = {
   id: string;
@@ -34,6 +33,9 @@ export default function App() {
   const [dragOffset, setDragOffset] = useState<{ x: number, y: number } | null>(null);
   const isDraggingRef = useRef(false);
 
+  const [hasClickedDonate, setHasClickedDonate] = useState(false);
+  const [isMusicPlaying, setIsMusicPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const zoomIntentRef = useRef<{ scale: number, x: number, y: number, oldScale: number } | null>(null);
@@ -236,6 +238,7 @@ export default function App() {
       // Select empty cell
       setSelectedCell({ x, y });
       setIsSidebarOpen(true);
+      setHasClickedDonate(false);
     }
   };
 
@@ -350,14 +353,46 @@ export default function App() {
     setBlocks([...blocks, newBlock]);
     setSelectedCell(null);
     setIsSidebarOpen(false);
-    setFormData({ title: '', link: '', color: '#FF6321', imageUrl: '' });
+    setFormData({ title: '', link: '', color: '#00F0FF', imageUrl: '' });
+    setHasClickedDonate(false);
   };
 
   const isFormValid = formData.title.trim() !== '' && formData.link.trim() !== '';
 
+  const toggleMusic = () => {
+    if (audioRef.current) {
+      if (isMusicPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play().catch(e => console.error("Audio play failed:", e));
+      }
+      setIsMusicPlaying(!isMusicPlaying);
+    }
+  };
+
   return (
-    <PayPalScriptProvider options={{ clientId: "test", currency: "EUR" }}>
     <div className="min-h-screen bg-[#050B14] text-white font-sans selection:bg-[#00F0FF] selection:text-black relative">
+      {/* Audio Element */}
+      <audio 
+        ref={audioRef} 
+        loop 
+        src="https://upload.wikimedia.org/wikipedia/commons/4/4b/Kevin_MacLeod_-_Fluidscape.ogg" 
+        preload="auto"
+      />
+
+      {/* Music Toggle Button */}
+      <button
+        onClick={toggleMusic}
+        className="fixed bottom-6 left-6 z-40 bg-[#0A101A] border border-[#00F0FF]/30 p-3 rounded-full shadow-[0_0_15px_rgba(0,240,255,0.2)] hover:border-[#00F0FF] hover:shadow-[0_0_25px_rgba(0,240,255,0.4)] transition-all group"
+        title={isMusicPlaying ? "Musik pausieren" : "Beruhigende Musik abspielen"}
+      >
+        {isMusicPlaying ? (
+          <Volume2 className="w-6 h-6 text-[#00F0FF]" />
+        ) : (
+          <VolumeX className="w-6 h-6 text-white/50 group-hover:text-[#00F0FF]" />
+        )}
+      </button>
+
       {/* Pixel Background */}
       <div 
         className="fixed inset-0 z-0 pointer-events-none"
@@ -646,30 +681,37 @@ export default function App() {
               {!isFormValid && (
                 <p className="text-sm text-red-400 mb-4">Bitte fülle Werbetitel und Ziel-URL aus, um fortzufahren.</p>
               )}
-              <div className={!isFormValid ? "opacity-50 pointer-events-none" : ""}>
-                <PayPalButtons 
-                  style={{ layout: "vertical", color: "blue", label: "donate" }}
-                  createOrder={(data, actions) => {
-                    return actions.order.create({
-                      intent: "CAPTURE",
-                      purchase_units: [
-                        {
-                          description: `my-pixel.click Spende: ${formData.title}`,
-                          amount: {
-                            currency_code: "EUR",
-                            value: "10.00",
-                          },
-                        },
-                      ],
-                    });
-                  }}
-                  onApprove={async (data, actions) => {
-                    if (actions.order) {
-                      await actions.order.capture();
-                      handlePaymentSuccess();
-                    }
-                  }}
-                />
+              <div className={!isFormValid ? "opacity-50 pointer-events-none" : "flex flex-col gap-4"}>
+                {!hasClickedDonate ? (
+                  <a 
+                    href="https://www.paypal.com/pool/9oqXETlyIR?sr=wccr" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    onClick={() => setHasClickedDonate(true)}
+                    className="w-full py-4 bg-[#0070BA] hover:bg-[#003087] text-white rounded-lg flex items-center justify-center font-bold transition-colors gap-2 shadow-[0_0_15px_rgba(0,112,186,0.5)]"
+                  >
+                    1. Über PayPal spenden (10 €)
+                  </a>
+                ) : (
+                  <div className="space-y-3">
+                    <a 
+                      href="https://www.paypal.com/pool/9oqXETlyIR?sr=wccr" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="w-full py-2 bg-[#0070BA]/30 hover:bg-[#0070BA]/50 text-white/80 rounded-lg flex items-center justify-center font-bold transition-colors gap-2 text-sm border border-[#0070BA]/50"
+                    >
+                      PayPal Pool erneut öffnen
+                    </a>
+                    <button
+                      type="button"
+                      onClick={handlePaymentSuccess}
+                      className="w-full py-4 bg-[#00F0FF] hover:bg-white text-black rounded-lg flex items-center justify-center font-bold group transition-all duration-300 shadow-[0_0_20px_rgba(0,240,255,0.4)]"
+                    >
+                      <CheckCircle2 className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
+                      2. Zahlung bestätigt - Block sichern
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </form>
@@ -930,6 +972,5 @@ export default function App() {
         </div>
       )}
     </div>
-    </PayPalScriptProvider>
   );
 }
