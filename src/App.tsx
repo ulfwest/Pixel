@@ -441,9 +441,12 @@ export default function App() {
               Spende für Pixel, platziere deine Werbung und werde Teil der digitalen Geschichte. 
               Jeder Block ist 10x10 Pixel groß. Einmal gespendet, gehört er für immer dir.
             </p>
-            <div className="flex items-center justify-center gap-4">
+            <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-4">
               <a href="#grid" className="px-8 py-4 bg-[#00F0FF] text-black font-bold rounded-full hover:bg-white shadow-[0_0_20px_rgba(0,240,255,0.3)] hover:shadow-[0_0_30px_rgba(0,240,255,0.5)] transition-all flex items-center gap-2">
                 Jetzt sichern <ArrowRight className="w-5 h-5" />
+              </a>
+              <a href="https://www.paypal.com/pool/9oqXETlyIR?sr=wccr" target="_blank" rel="noopener noreferrer" className="px-8 py-4 bg-[#0070BA] text-white font-bold rounded-full hover:bg-[#003087] shadow-[0_0_20px_rgba(0,112,186,0.3)] hover:shadow-[0_0_30px_rgba(0,112,186,0.6)] transition-all flex items-center gap-2">
+                Direkt spenden (ohne Pixel)
               </a>
               <a href="#about" className="px-8 py-4 border border-white/20 rounded-full hover:bg-white/5 hover:border-[#00F0FF]/50 transition-all font-medium">
                 So funktioniert's
