@@ -19,13 +19,14 @@ const BLOCK_SIZE = 10; // Each block is 10x10 pixels
 
 export default function App() {
   const [blocks, setBlocks] = useState<Block[]>([]);
-  const [selectedCell, setSelectedCell] = useState<{ x: number; y: number } | null>(null);
+  const [selectedCell, setSelectedCell] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [popupBlock, setPopupBlock] = useState<Block | null>(null);
   const [isDisclaimerOpen, setIsDisclaimerOpen] = useState(false);
   const [isImpressumOpen, setIsImpressumOpen] = useState(false);
   const [isDatenschutzOpen, setIsDatenschutzOpen] = useState(false);
   const [resizeError, setResizeError] = useState<string | null>(null);
+  const [formResizeError, setFormResizeError] = useState<string | null>(null);
   const [scale, setScale] = useState(1);
 
   const [draggingBlockId, setDraggingBlockId] = useState<string | null>(null);
@@ -127,10 +128,10 @@ export default function App() {
     // Draw selected cell highlight
     if (selectedCell) {
       ctx.fillStyle = 'rgba(0, 240, 255, 0.2)';
-      ctx.fillRect(selectedCell.x * BLOCK_SIZE, selectedCell.y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+      ctx.fillRect(selectedCell.x * BLOCK_SIZE, selectedCell.y * BLOCK_SIZE, selectedCell.w * BLOCK_SIZE, selectedCell.h * BLOCK_SIZE);
       ctx.strokeStyle = '#00F0FF';
       ctx.lineWidth = 2;
-      ctx.strokeRect(selectedCell.x * BLOCK_SIZE, selectedCell.y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+      ctx.strokeRect(selectedCell.x * BLOCK_SIZE, selectedCell.y * BLOCK_SIZE, selectedCell.w * BLOCK_SIZE, selectedCell.h * BLOCK_SIZE);
     }
   };
 
@@ -236,7 +237,7 @@ export default function App() {
       setIsSidebarOpen(false);
     } else {
       // Select empty cell
-      setSelectedCell({ x, y });
+      setSelectedCell({ x, y, w: 1, h: 1 });
       setIsSidebarOpen(true);
       setHasClickedDonate(false);
     }
@@ -299,12 +300,12 @@ export default function App() {
     }
   }, [scale]);
 
-  const canResize = (currentBlockId: string, newX: number, newY: number, newW: number, newH: number) => {
+  const canResize = (currentBlockId: string | null, newX: number, newY: number, newW: number, newH: number) => {
     if (newX < 0 || newY < 0 || newX + newW > GRID_SIZE || newY + newH > GRID_SIZE) {
       return false;
     }
     for (const b of blocks) {
-      if (b.id === currentBlockId) continue;
+      if (currentBlockId && b.id === currentBlockId) continue;
       const overlap = !(
         newX + newW <= b.x ||
         newX >= b.x + b.w ||
@@ -314,6 +315,20 @@ export default function App() {
       if (overlap) return false;
     }
     return true;
+  };
+
+  const handleFormResize = (dw: number, dh: number) => {
+    if (!selectedCell) return;
+    setFormResizeError(null);
+    const newW = selectedCell.w + dw;
+    const newH = selectedCell.h + dh;
+    if (newW < 1 || newH < 1) return;
+    if (canResize(null, selectedCell.x, selectedCell.y, newW, newH)) {
+      setSelectedCell({ ...selectedCell, w: newW, h: newH });
+    } else {
+      setFormResizeError("Nicht genug Platz! Überschneidung mit anderen Blöcken oder dem Rand.");
+      setTimeout(() => setFormResizeError(null), 3000);
+    }
   };
 
   const handleResize = (dw: number, dh: number) => {
@@ -342,8 +357,8 @@ export default function App() {
       id: Date.now().toString(),
       x: selectedCell.x,
       y: selectedCell.y,
-      w: 1, // Default to 1x1 block for now
-      h: 1,
+      w: selectedCell.w,
+      h: selectedCell.h,
       color: formData.color,
       title: formData.title,
       link: formData.link,
@@ -618,12 +633,43 @@ export default function App() {
             </div>
             <div className="flex justify-between mb-2">
               <span className="text-white/50">Größe</span>
-              <span>10x10 Pixel</span>
+              <span>{selectedCell.w * 10}x{selectedCell.h * 10} Pixel</span>
             </div>
             <div className="flex justify-between text-[#00F0FF] drop-shadow-[0_0_5px_rgba(0,240,255,0.5)]">
               <span>Spende</span>
-              <span>10,00 €</span>
+              <span>{selectedCell.w * selectedCell.h * 10},00 €</span>
             </div>
+          </div>
+
+          {/* Size Adjustments */}
+          <div className="mb-6 flex flex-col gap-2">
+            <label className="block text-xs font-bold uppercase tracking-wider text-white/50 mb-1">Ausmaße anpassen (Blöcke)</label>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 flex-1">
+                <span className="text-xs uppercase tracking-wider text-white/50">Breite:</span>
+                <div className="flex items-center flex-1 justify-between gap-1 bg-[#050B14] p-1.5 rounded border border-white/10">
+                  <button type="button" onClick={() => handleFormResize(-1, 0)} className="hover:text-[#00F0FF] disabled:opacity-50 transition-colors" disabled={selectedCell.w <= 1}><Minus className="w-4 h-4" /></button>
+                  <span className="text-center font-mono">{selectedCell.w}</span>
+                  <button type="button" onClick={() => handleFormResize(1, 0)} className="hover:text-[#00F0FF] transition-colors"><Plus className="w-4 h-4" /></button>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 flex-1">
+                <span className="text-xs uppercase tracking-wider text-white/50">Höhe:</span>
+                <div className="flex items-center flex-1 justify-between gap-1 bg-[#050B14] p-1.5 rounded border border-white/10">
+                  <button type="button" onClick={() => handleFormResize(0, -1)} className="hover:text-[#00F0FF] disabled:opacity-50 transition-colors" disabled={selectedCell.h <= 1}><Minus className="w-4 h-4" /></button>
+                  <span className="text-center font-mono">{selectedCell.h}</span>
+                  <button type="button" onClick={() => handleFormResize(0, 1)} className="hover:text-[#00F0FF] transition-colors"><Plus className="w-4 h-4" /></button>
+                </div>
+              </div>
+            </div>
+            {formResizeError && (
+              <motion.div 
+                initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }}
+                className="text-xs text-red-400 mt-1"
+              >
+                {formResizeError}
+              </motion.div>
+            )}
           </div>
 
           <form className="space-y-6">
@@ -693,7 +739,7 @@ export default function App() {
                     onClick={() => setHasClickedDonate(true)}
                     className="w-full py-4 bg-[#0070BA] hover:bg-[#003087] text-white rounded-lg flex items-center justify-center font-bold transition-colors gap-2 shadow-[0_0_15px_rgba(0,112,186,0.5)]"
                   >
-                    1. Über PayPal spenden (10 €)
+                    1. Über PayPal spenden ({selectedCell.w * selectedCell.h * 10} €)
                   </a>
                 ) : (
                   <div className="space-y-3">
