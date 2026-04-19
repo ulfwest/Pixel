@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { motion } from 'motion/react';
-import { MousePointerClick, Info, ArrowRight, CheckCircle2, X, ZoomIn, ZoomOut, Maximize, Plus, Minus, Volume2, VolumeX, Share2 } from 'lucide-react';
+import { MousePointerClick, Info, ArrowRight, CheckCircle2, X, ZoomIn, ZoomOut, Maximize, Plus, Minus, Volume2, VolumeX, Share2, Upload, Sparkles, Loader2 } from 'lucide-react';
+import { GoogleGenAI } from "@google/genai";
+
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 type Block = {
   id: string;
@@ -37,6 +40,10 @@ export default function App() {
   const [hasClickedDonate, setHasClickedDonate] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);
+  const [hoveredCell, setHoveredCell] = useState<{ x: number, y: number } | null>(null);
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [imageTab, setImageTab] = useState<'url' | 'upload' | 'ai'>('url');
   const audioRef = useRef<HTMLAudioElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -126,6 +133,19 @@ export default function App() {
       }
     });
 
+    // Draw hovered cell highlight
+    if (hoveredCell && !isDraggingRef.current && !selectedCell) {
+       // Check if hovering an existing block
+       const block = blocks.find(b => hoveredCell.x >= b.x && hoveredCell.x < b.x + b.w && hoveredCell.y >= b.y && hoveredCell.y < b.y + b.h);
+       if (block) {
+         ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+         ctx.fillRect(block.x * BLOCK_SIZE, block.y * BLOCK_SIZE, block.w * BLOCK_SIZE, block.h * BLOCK_SIZE);
+       } else {
+         ctx.fillStyle = 'rgba(0, 240, 255, 0.3)';
+         ctx.fillRect(hoveredCell.x * BLOCK_SIZE, hoveredCell.y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+       }
+    }
+
     // Draw selected cell highlight
     if (selectedCell) {
       ctx.fillStyle = 'rgba(0, 240, 255, 0.2)';
@@ -166,8 +186,13 @@ export default function App() {
 
   const handleCanvasMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const coords = getGridCoords(e);
-    if (!coords) return;
+    if (!coords) {
+      setHoveredCell(null);
+      return;
+    }
     const { x, y } = coords;
+
+    setHoveredCell({ x, y });
 
     if (draggingBlockId && dragOffset) {
       const newX = x - dragOffset.x;
@@ -216,6 +241,11 @@ export default function App() {
         isDraggingRef.current = false;
       }, 0);
     }
+  };
+
+  const handleCanvasMouseLeave = () => {
+    setHoveredCell(null);
+    handleCanvasMouseUp();
   };
 
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -382,6 +412,61 @@ export default function App() {
     setIsSidebarOpen(false);
     setFormData({ title: '', link: '', color: '#00F0FF', imageUrl: '' });
     setHasClickedDonate(false);
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert("Bild ist zu groß (max. 5MB)");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData({ ...formData, imageUrl: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleGenerateAIImage = async () => {
+    if (!aiPrompt.trim() || isGeneratingImage) return;
+    setIsGeneratingImage(true);
+    try {
+      const response = await ai.models.generateContent({
+        model: 'gemini-3.1-flash-image-preview',
+        contents: {
+          parts: [{ text: aiPrompt }],
+        },
+        config: {
+          imageConfig: { aspectRatio: "1:1", imageSize: "1K" }
+        },
+      });
+      
+      let base64Image = null;
+      for (const candidate of response.candidates || []) {
+        if (candidate.content?.parts) {
+          for (const part of candidate.content.parts) {
+            if (part.inlineData) {
+              base64Image = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+              break;
+            }
+          }
+        }
+        if (base64Image) break;
+      }
+      
+      if (base64Image) {
+        setFormData({ ...formData, imageUrl: base64Image });
+      } else {
+        throw new Error("No image generated");
+      }
+    } catch (error) {
+      console.error("AI Image Generation failed:", error);
+      alert("Fehler bei der Bildgenerierung. Bitte probiere es erneut.");
+    } finally {
+      setIsGeneratingImage(false);
+    }
   };
 
   const isFormValid = formData.title.trim() !== '' && formData.link.trim() !== '';
@@ -604,7 +689,7 @@ export default function App() {
                 onMouseDown={handleCanvasMouseDown}
                 onMouseMove={handleCanvasMouseMove}
                 onMouseUp={handleCanvasMouseUp}
-                onMouseLeave={handleCanvasMouseUp}
+                onMouseLeave={handleCanvasMouseLeave}
                 className="block bg-[#050B14] transition-transform duration-200 origin-top-left"
                 style={{ 
                   width: GRID_SIZE * BLOCK_SIZE * scale, 
@@ -710,14 +795,90 @@ export default function App() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-white/50 mb-2">Bild-URL (Optional)</label>
-              <input 
-                type="url" 
-                value={formData.imageUrl}
-                onChange={(e) => setFormData({...formData, imageUrl: e.target.value})}
-                className="w-full bg-[#050B14] border border-[#00F0FF]/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#00F0FF] focus:shadow-[0_0_15px_rgba(0,240,255,0.2)] transition-all"
-                placeholder="Bild-URL eingeben"
-              />
+              <label className="block text-xs font-bold uppercase tracking-wider text-white/50 mb-2">Block-Bild</label>
+              
+              <div className="flex bg-[#050B14] rounded-lg p-1 border border-[#00F0FF]/20 mb-3 text-sm">
+                <button 
+                  type="button" 
+                  onClick={() => setImageTab('url')}
+                  className={`flex-1 py-1.5 rounded-md transition-colors ${imageTab === 'url' ? 'bg-[#00F0FF]/20 text-[#00F0FF]' : 'text-white/60 hover:text-white'}`}
+                >
+                  URL
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => setImageTab('upload')}
+                  className={`flex-1 py-1.5 rounded-md transition-colors ${imageTab === 'upload' ? 'bg-[#00F0FF]/20 text-[#00F0FF]' : 'text-white/60 hover:text-white'}`}
+                >
+                  Upload
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => setImageTab('ai')}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-md transition-colors ${imageTab === 'ai' ? 'bg-gradient-to-r from-indigo-500/30 to-purple-500/30 text-purple-300' : 'text-white/60 hover:text-white'}`}
+                >
+                  <Sparkles className="w-3.5 h-3.5" /> KI
+                </button>
+              </div>
+
+              {imageTab === 'url' && (
+                <input 
+                  type="url" 
+                  value={formData.imageUrl}
+                  onChange={(e) => setFormData({...formData, imageUrl: e.target.value})}
+                  className="w-full bg-[#050B14] border border-[#00F0FF]/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#00F0FF] focus:shadow-[0_0_15px_rgba(0,240,255,0.2)] transition-all"
+                  placeholder="Bild-URL eingeben"
+                />
+              )}
+
+              {imageTab === 'upload' && (
+                <div className="relative border-2 border-dashed border-[#00F0FF]/30 rounded-lg bg-[#050B14] hover:bg-[#00F0FF]/5 transition-colors group p-4 flex justify-center items-center cursor-pointer">
+                  <input 
+                    type="file" 
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  />
+                  <div className="flex flex-col items-center gap-2 text-white/50 group-hover:text-[#00F0FF] transition-colors pointer-events-none">
+                    <Upload className="w-6 h-6" />
+                    <span className="text-sm">Bilddatei auswählen ...</span>
+                  </div>
+                </div>
+              )}
+
+              {imageTab === 'ai' && (
+                <div className="flex flex-col gap-2">
+                  <textarea
+                    value={aiPrompt}
+                    onChange={(e) => setAiPrompt(e.target.value)}
+                    placeholder="Beschreibe dein Bild (z.B. Ein Neon-Cyberpunk-Kater mit Sonnenbrille)"
+                    rows={3}
+                    className="w-full bg-[#050B14] border border-purple-500/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-500 focus:shadow-[0_0_15px_rgba(168,85,247,0.2)] transition-all resize-none text-sm"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleGenerateAIImage}
+                    disabled={isGeneratingImage || !aiPrompt.trim()}
+                    className="w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-bold rounded-lg flex items-center justify-center transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)] disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isGeneratingImage ? (
+                      <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Generiere...</>
+                    ) : (
+                      <><Sparkles className="w-4 h-4 mr-2" /> KI Bild generieren</>
+                    )}
+                  </button>
+                </div>
+              )}
+
+              {formData.imageUrl && (
+                <div className="mt-4">
+                  <span className="block text-[10px] font-bold uppercase tracking-wider text-white/50 mb-2">Vorschau</span>
+                  <div className="w-full aspect-video rounded-lg overflow-hidden border border-[#00F0FF]/30 bg-[#050B14]">
+                    <img src={formData.imageUrl} className="w-full h-full object-contain" alt="Preview" />
+                  </div>
+                  <button type="button" onClick={() => setFormData({...formData, imageUrl: ''})} className="text-xs text-red-400 mt-2 hover:underline">Bild entfernen</button>
+                </div>
+              )}
             </div>
 
             <div>
