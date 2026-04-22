@@ -47,6 +47,7 @@ export default function App() {
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [isAuthChecking, setIsAuthChecking] = useState(true);
+  const [showIntro, setShowIntro] = useState(true);
 
   const audioRef = useRef<HTMLAudioElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -538,6 +539,26 @@ export default function App() {
     }
   };
 
+  if (showIntro) {
+    return (
+      <div className="w-screen h-screen overflow-hidden bg-[#050B14] relative">
+        <iframe 
+          src="https://pixel-3gs36coyk-ulfwests-projects.vercel.app" 
+          className="w-full h-full border-none"
+          title="Intro App"
+        ></iframe>
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-50">
+          <button 
+            onClick={() => setShowIntro(false)} 
+            className="px-8 py-4 bg-[#050B14]/60 backdrop-blur-md border border-[#00F0FF]/50 text-[#00F0FF] font-bold rounded-full hover:bg-[#00F0FF] hover:text-black shadow-[0_0_20px_rgba(0,240,255,0.3)] hover:shadow-[0_0_40px_rgba(0,240,255,0.6)] transition-all flex items-center gap-3 group whitespace-nowrap"
+          >
+            Zu my-pixel.click <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#050B14] text-white font-sans selection:bg-[#00F0FF] selection:text-black relative">
       {/* Audio Element */}
@@ -978,26 +999,8 @@ export default function App() {
         </motion.div>
       )}
 
-      {/* Full-width external App integration */}
-      <section className="py-20 border-t border-[#00F0FF]/10 relative z-10 bg-[#02050A]">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-5xl font-black mb-4 uppercase tracking-tighter">Partner & Integration</h2>
-            <p className="text-white/60">Die nahtlose Einbindung der externen Werbe-Pixel Applikation.</p>
-          </div>
-          <div className="w-full h-[600px] border border-[#00F0FF]/30 rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(0,240,255,0.1)] relative group">
-            <div className="absolute inset-0 pointer-events-none border border-[#00F0FF]/20 rounded-2xl z-10 mix-blend-overlay"></div>
-            <iframe 
-              src="https://pixel-3gs36coyk-ulfwests-projects.vercel.app" 
-              className="w-full h-full bg-[#050B14]"
-              title="Werbe Pixel External App"
-            ></iframe>
-          </div>
-        </div>
-      </section>
-
       {/* Footer */}
-      <footer className="border-t border-[#00F0FF]/20 py-12 px-6 mt-20 bg-[#0A101A]">
+      <footer className="border-t border-[#00F0FF]/20 py-12 px-6 bg-[#0A101A]">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 bg-[#00F0FF] rounded-sm shadow-[0_0_10px_rgba(0,240,255,0.5)]"></div>
