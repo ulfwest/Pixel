@@ -1,0 +1,56 @@
+{
+  "entities": {
+    "Block": {
+      "title": "Block",
+      "description": "Represents a purchased area on the grid",
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "number",
+          "description": "X coordinate"
+        },
+        "y": {
+          "type": "number",
+          "description": "Y coordinate"
+        },
+        "w": {
+          "type": "number",
+          "description": "Width of the block"
+        },
+        "h": {
+          "type": "number",
+          "description": "Height of the block"
+        },
+        "color": {
+          "type": "string",
+          "description": "Background color of the block"
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "Optional image URL to display"
+        },
+        "link": {
+          "type": "string",
+          "description": "Destination URL when clicking the block"
+        },
+        "title": {
+          "type": "string",
+          "description": "Title of the advertisement or block"
+        },
+        "ownerId": {
+          "type": "string",
+          "description": "Firebase account UID of the block owner"
+        }
+      },
+      "required": ["x", "y", "w", "h", "color", "link", "title", "ownerId"]
+    }
+  },
+  "firestore": {
+    "/blocks/{blockId}": {
+      "schema": {
+        "$ref": "#/entities/Block"
+      },
+      "description": "Stores all grid blocks purchased by users."
+    }
+  }
+}

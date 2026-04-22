@@ -1,0 +1,69 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Primitive Helpers
+    function isSignedIn() { 
+      return request.auth != null; 
+    }
+    
+    function isVerifiedEmail() {
+      // Allow Google Sign-In which sets email_verified to true
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function incoming() { 
+      return request.resource.data; 
+    }
+    
+    function existing() { 
+      return resource.data; 
+    }
+    
+    function isValidId(id) { 
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); 
+    }
+
+    function isValidBlock(data) {
+      return data.keys().hasAll(['x', 'y', 'w', 'h', 'color', 'title', 'link', 'ownerId']) &&
+             data.x is number && data.x >= 0 && data.x < 100 &&
+             data.y is number && data.y >= 0 && data.y < 100 &&
+             data.w is number && data.w >= 1 && data.w <= 100 &&
+             data.h is number && data.h >= 1 && data.h <= 100 &&
+             data.color is string && data.color.size() <= 30 &&
+             data.title is string && data.title.size() <= 100 &&
+             data.link is string && data.link.size() <= 500 &&
+             data.ownerId is string && data.ownerId == request.auth.uid &&
+             (
+               !('imageUrl' in data) || 
+               (data.imageUrl is string && data.imageUrl.size() <= 1000)
+             );
+    }
+
+    // Public Board Collection
+    match /blocks/{blockId} {
+      // The pixel board is explicitly public for rendering
+      allow read: if true;
+      
+      allow create: if isVerifiedEmail() &&
+                    isValidId(blockId) &&
+                    isValidBlock(incoming()) &&
+                    incoming().keys().size() >= 8 && incoming().keys().size() <= 9;
+                    
+      allow update: if isVerifiedEmail() &&
+                    existing().ownerId == request.auth.uid &&
+                    isValidId(blockId) &&
+                    isValidBlock(incoming()) &&
+                    incoming().ownerId == existing().ownerId &&
+                    incoming().keys().hasAll(['x', 'y', 'w', 'h', 'color', 'title', 'link', 'ownerId']) &&
+                    incoming().diff(existing()).affectedKeys().hasOnly(['x', 'y', 'w', 'h', 'color', 'title', 'link', 'imageUrl']);
+                    
+      allow delete: if isVerifiedEmail() &&
+                    existing().ownerId == request.auth.uid;
+    }
+  }
+}
