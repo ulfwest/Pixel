@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { motion } from 'motion/react';
-import { MousePointerClick, Info, ArrowRight, CheckCircle2, X, ZoomIn, ZoomOut, Maximize, Plus, Minus, Volume2, VolumeX, Share2 } from 'lucide-react';
+import { MousePointerClick, Info, ArrowRight, CheckCircle2, X, ZoomIn, ZoomOut, Maximize, Plus, Minus, Volume2, VolumeX, Share2, Upload } from 'lucide-react';
 
 type Block = {
   id: string;
@@ -16,6 +16,8 @@ type Block = {
 
 const GRID_SIZE = 100; // 100x100 blocks
 const BLOCK_SIZE = 10; // Each block is 10x10 pixels
+const imageCache: Record<string, HTMLImageElement> = {};
+const loadingImages: Set<string> = new Set();
 
 export default function App() {
   const [blocks, setBlocks] = useState<Block[]>([]);
@@ -33,6 +35,7 @@ export default function App() {
   const [dragPos, setDragPos] = useState<{ x: number, y: number } | null>(null);
   const [dragOffset, setDragOffset] = useState<{ x: number, y: number } | null>(null);
   const [hoverCell, setHoverCell] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
+  const [imageTick, setImageTick] = useState(0);
   const isDraggingRef = useRef(false);
 
   const [hasClickedDonate, setHasClickedDonate] = useState(false);
@@ -65,7 +68,7 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('pixelBlocks_v4', JSON.stringify(blocks));
     drawGrid();
-  }, [blocks, selectedCell, draggingBlockId, dragPos, hoverCell]);
+  }, [blocks, selectedCell, draggingBlockId, dragPos, hoverCell, imageTick]);
 
   const drawGrid = () => {
     const canvas = canvasRef.current;
@@ -94,6 +97,23 @@ export default function App() {
       ctx.stroke();
     }
 
+    // Helper to load image
+    const ensureImageLoaded = (url: string) => {
+      if (!imageCache[url] && !loadingImages.has(url)) {
+        loadingImages.add(url);
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          imageCache[url] = img;
+          setImageTick(t => t + 1); // trigger redraw
+        };
+        img.onerror = () => {
+          // Keep it in loading set to prevent constant retries
+        };
+        img.src = url;
+      }
+    };
+
     // Draw blocks
     blocks.forEach((block) => {
       if (block.id === draggingBlockId && dragPos) {
@@ -109,17 +129,27 @@ export default function App() {
           }
         }
         
-        ctx.fillStyle = block.color;
         ctx.globalAlpha = 0.5;
-        ctx.fillRect(dragPos.x * BLOCK_SIZE, dragPos.y * BLOCK_SIZE, block.w * BLOCK_SIZE, block.h * BLOCK_SIZE);
+        if (block.imageUrl && imageCache[block.imageUrl]) {
+          ctx.drawImage(imageCache[block.imageUrl], dragPos.x * BLOCK_SIZE, dragPos.y * BLOCK_SIZE, block.w * BLOCK_SIZE, block.h * BLOCK_SIZE);
+        } else {
+          ctx.fillStyle = block.color;
+          ctx.fillRect(dragPos.x * BLOCK_SIZE, dragPos.y * BLOCK_SIZE, block.w * BLOCK_SIZE, block.h * BLOCK_SIZE);
+          if (block.imageUrl) ensureImageLoaded(block.imageUrl);
+        }
         
         ctx.strokeStyle = overlap ? 'red' : '#00F0FF';
         ctx.lineWidth = 2;
         ctx.strokeRect(dragPos.x * BLOCK_SIZE, dragPos.y * BLOCK_SIZE, block.w * BLOCK_SIZE, block.h * BLOCK_SIZE);
         ctx.globalAlpha = 1.0;
       } else {
-        ctx.fillStyle = block.color;
-        ctx.fillRect(block.x * BLOCK_SIZE, block.y * BLOCK_SIZE, block.w * BLOCK_SIZE, block.h * BLOCK_SIZE);
+        if (block.imageUrl && imageCache[block.imageUrl]) {
+          ctx.drawImage(imageCache[block.imageUrl], block.x * BLOCK_SIZE, block.y * BLOCK_SIZE, block.w * BLOCK_SIZE, block.h * BLOCK_SIZE);
+        } else {
+          ctx.fillStyle = block.color;
+          ctx.fillRect(block.x * BLOCK_SIZE, block.y * BLOCK_SIZE, block.w * BLOCK_SIZE, block.h * BLOCK_SIZE);
+          if (block.imageUrl) ensureImageLoaded(block.imageUrl);
+        }
         
         ctx.strokeStyle = 'rgba(0,0,0,0.2)';
         ctx.lineWidth = 1;
@@ -411,6 +441,22 @@ export default function App() {
   };
 
   const isFormValid = formData.title.trim() !== '' && formData.link.trim() !== '';
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file size (e.g. max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert("Das Bild darf maximal 5MB groß sein.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData({ ...formData, imageUrl: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const toggleMusic = () => {
     if (audioRef.current) {
@@ -736,14 +782,43 @@ export default function App() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-white/50 mb-2">Bild-URL (Optional)</label>
-              <input 
-                type="url" 
-                value={formData.imageUrl}
-                onChange={(e) => setFormData({...formData, imageUrl: e.target.value})}
-                className="w-full bg-[#050B14] border border-[#00F0FF]/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#00F0FF] focus:shadow-[0_0_15px_rgba(0,240,255,0.2)] transition-all"
-                placeholder="Bild-URL eingeben"
-              />
+              <label className="block text-xs font-bold uppercase tracking-wider text-white/50 mb-2">Bild hochladen oder Bild-URL (Optional)</label>
+              
+              {formData.imageUrl && (
+                <div className="mb-4 aspect-video bg-[#050B14] border border-[#00F0FF]/30 rounded-lg overflow-hidden flex items-center justify-center relative group">
+                  <img src={formData.imageUrl} alt="Vorschau" className="w-full h-full object-contain" />
+                  <button type="button" onClick={() => setFormData({...formData, imageUrl: ''})} className="absolute top-2 right-2 bg-black/70 hover:bg-black text-white p-1.5 rounded-full backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
+              <div className="flex flex-col gap-3">
+                <label className="cursor-pointer w-full bg-[#050B14] border border-dashed border-[#00F0FF]/50 hover:border-[#00F0FF] hover:bg-[#00F0FF]/5 rounded-lg px-4 py-6 text-center text-white/70 transition-all flex flex-col items-center justify-center gap-2">
+                  <Upload className="w-6 h-6 text-[#00F0FF]" />
+                  <span className="text-sm">Bild vom Gerät auswählen</span>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={handleImageUpload} 
+                    className="hidden"
+                  />
+                </label>
+
+                <div className="flex items-center gap-4 text-xs text-white/30 font-bold uppercase w-full">
+                  <div className="flex-1 h-px bg-white/10"></div>
+                  <span>ODER</span>
+                  <div className="flex-1 h-px bg-white/10"></div>
+                </div>
+
+                <input 
+                  type="url" 
+                  value={formData.imageUrl}
+                  onChange={(e) => setFormData({...formData, imageUrl: e.target.value})}
+                  className="w-full bg-[#050B14] border border-[#00F0FF]/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#00F0FF] focus:shadow-[0_0_15px_rgba(0,240,255,0.2)] transition-all"
+                  placeholder="Bild-URL eingeben"
+                />
+              </div>
             </div>
 
             <div>
@@ -804,6 +879,24 @@ export default function App() {
           </form>
         </motion.div>
       )}
+
+      {/* Full-width external App integration */}
+      <section className="py-20 border-t border-[#00F0FF]/10 relative z-10 bg-[#02050A]">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-5xl font-black mb-4 uppercase tracking-tighter">Partner & Integration</h2>
+            <p className="text-white/60">Die nahtlose Einbindung der externen Werbe-Pixel Applikation.</p>
+          </div>
+          <div className="w-full h-[600px] border border-[#00F0FF]/30 rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(0,240,255,0.1)] relative group">
+            <div className="absolute inset-0 pointer-events-none border border-[#00F0FF]/20 rounded-2xl z-10 mix-blend-overlay"></div>
+            <iframe 
+              src="https://werbe-pixel-569841876692.us-west1.run.app" 
+              className="w-full h-full bg-[#050B14]"
+              title="Werbe Pixel External App"
+            ></iframe>
+          </div>
+        </div>
+      </section>
 
       {/* Footer */}
       <footer className="border-t border-[#00F0FF]/20 py-12 px-6 mt-20 bg-[#0A101A]">
