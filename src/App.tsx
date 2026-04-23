@@ -49,6 +49,7 @@ export default function App() {
   const [isAuthChecking, setIsAuthChecking] = useState(true);
   const [showIntro, setShowIntro] = useState(true);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [gridType, setGridType] = useState<'standard' | 'youtuber'>('standard');
 
   const audioRef = useRef<HTMLAudioElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -73,8 +74,21 @@ export default function App() {
       setIsAuthChecking(false);
     });
 
+    return () => {
+      unsubscribeAuth();
+    };
+  }, []);
+
+  useEffect(() => {
+    // Clear selections when grid changes
+    setPopupBlock(null);
+    setSelectedCell(null);
+    setHoverCell(null);
+    setFormData({ title: '', link: '', color: '#00F0FF', imageUrl: '' });
+
     // Firestore Realtime Listener
-    const colRef = collection(db, 'blocks');
+    const collectionName = gridType === 'standard' ? 'blocks' : 'youtuber_blocks';
+    const colRef = collection(db, collectionName);
     const unsubscribeBlocks = onSnapshot(colRef, (snapshot) => {
       const loadedBlocks: Block[] = snapshot.docs.map(doc => ({
         id: doc.id,
@@ -86,10 +100,9 @@ export default function App() {
     });
 
     return () => {
-      unsubscribeAuth();
       unsubscribeBlocks();
     };
-  }, []);
+  }, [gridType]);
 
   useEffect(() => {
     drawGrid();
@@ -280,7 +293,8 @@ export default function App() {
            alert("Du kannst nur deine eigenen Blöcke verschieben.");
         } else {
            try {
-             await updateDoc(doc(db, 'blocks', block.id), {
+             const collectionName = gridType === 'standard' ? 'blocks' : 'youtuber_blocks';
+             await updateDoc(doc(db, collectionName, block.id), {
                x: dragPos.x,
                y: dragPos.y
              });
@@ -443,7 +457,8 @@ export default function App() {
     if (canResize(popupBlock.id, popupBlock.x, popupBlock.y, newW, newH)) {
       try {
         const updatedBlock = { ...popupBlock, w: newW, h: newH };
-        await updateDoc(doc(db, 'blocks', popupBlock.id), {
+        const collectionName = gridType === 'standard' ? 'blocks' : 'youtuber_blocks';
+        await updateDoc(doc(db, collectionName, popupBlock.id), {
           w: newW,
           h: newH
         });
@@ -489,7 +504,8 @@ export default function App() {
     }
 
     try {
-      await setDoc(doc(db, 'blocks', blockId), newBlock);
+      const collectionName = gridType === 'standard' ? 'blocks' : 'youtuber_blocks';
+      await setDoc(doc(db, collectionName, blockId), newBlock);
       setSelectedCell(null);
       setIsSidebarOpen(false);
       
@@ -618,11 +634,28 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 bg-[#00F0FF] rounded-sm shadow-[0_0_10px_rgba(0,240,255,0.5)]"></div>
-            <span className="font-mono font-bold tracking-tight text-lg uppercase">my-pixel.click</span>
+            <span className="font-mono font-bold tracking-tight text-lg uppercase hidden sm:inline-block">my-pixel.click</span>
           </div>
-          <nav className="flex items-center gap-6 text-sm font-medium text-white/60">
-            <a href="#about" className="hover:text-white transition-colors">So funktioniert's</a>
-            <a href="#grid" className="hover:text-white transition-colors border-r border-white/20 pr-6">Das Raster</a>
+          
+          {/* Grid Type Switcher */}
+          <div className="flex items-center bg-[#0A101A] border border-[#00F0FF]/30 rounded-full p-1 shadow-inner">
+            <button 
+              onClick={() => setGridType('standard')}
+              className={`px-4 py-1.5 rounded-full text-xs font-bold font-mono transition-all uppercase tracking-wider ${gridType === 'standard' ? 'bg-[#00F0FF] text-black shadow-[0_0_10px_rgba(0,240,255,0.5)]' : 'text-white/50 hover:text-white'}`}
+            >
+              Standard
+            </button>
+            <button 
+              onClick={() => setGridType('youtuber')}
+              className={`px-4 py-1.5 rounded-full text-xs font-bold font-mono transition-all uppercase tracking-wider ${gridType === 'youtuber' ? 'bg-[#00F0FF] text-black shadow-[0_0_10px_rgba(0,240,255,0.5)]' : 'text-white/50 hover:text-white'}`}
+            >
+              YouTuber
+            </button>
+          </div>
+
+          <nav className="flex items-center gap-4 sm:gap-6 text-sm font-medium text-white/60">
+            <a href="#about" className="hover:text-white transition-colors hidden md:block">So funktioniert's</a>
+            <a href="#grid" className="hover:text-white transition-colors border-r border-white/20 pr-4 sm:pr-6 hidden sm:block">Das Raster</a>
             
             {/* Auth Button */}
             {!isAuthChecking && (

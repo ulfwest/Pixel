@@ -44,9 +44,29 @@ service cloud.firestore {
              );
     }
 
-    // Public Board Collection
+    // Public Board Collections
     match /blocks/{blockId} {
       // The pixel board is explicitly public for rendering
+      allow read: if true;
+      
+      allow create: if isVerifiedEmail() &&
+                    isValidId(blockId) &&
+                    isValidBlock(incoming()) &&
+                    incoming().keys().size() >= 8 && incoming().keys().size() <= 9;
+                    
+      allow update: if isVerifiedEmail() &&
+                    existing().ownerId == request.auth.uid &&
+                    isValidId(blockId) &&
+                    isValidBlock(incoming()) &&
+                    incoming().ownerId == existing().ownerId &&
+                    incoming().keys().hasAll(['x', 'y', 'w', 'h', 'color', 'title', 'link', 'ownerId']) &&
+                    incoming().diff(existing()).affectedKeys().hasOnly(['x', 'y', 'w', 'h', 'color', 'title', 'link', 'imageUrl']);
+                    
+      allow delete: if isVerifiedEmail() &&
+                    existing().ownerId == request.auth.uid;
+    }
+
+    match /youtuber_blocks/{blockId} {
       allow read: if true;
       
       allow create: if isVerifiedEmail() &&
