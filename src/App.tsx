@@ -554,11 +554,6 @@ export default function App() {
         </div>
 
         <div className="flex-1 max-w-7xl mx-auto w-full px-4 py-12 flex flex-col relative z-10 min-h-screen">
-          <div className="text-center mb-8">
-            <h2 className="text-4xl md:text-6xl font-black mb-4 uppercase tracking-tighter text-[#00F0FF] drop-shadow-[0_0_15px_rgba(0,240,255,0.4)]">Partner & Integration</h2>
-            <p className="text-white/60 text-lg">Willkommen! Die nahtlose Einbindung der externen Werbe-Pixel Applikation.</p>
-          </div>
-          
           <div className="flex-1 w-full border border-[#00F0FF]/30 rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(0,240,255,0.1)] relative group mb-8 flex flex-col">
             <div className="absolute inset-0 pointer-events-none border border-[#00F0FF]/20 rounded-2xl z-20 mix-blend-overlay"></div>
             <iframe 
