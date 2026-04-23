@@ -568,7 +568,7 @@ export default function App() {
               onClick={() => setShowIntro(false)} 
               className="px-8 py-4 bg-[#00F0FF] text-black font-bold rounded-full hover:bg-white shadow-[0_0_20px_rgba(0,240,255,0.3)] hover:shadow-[0_0_40px_rgba(0,240,255,0.6)] transition-all flex items-center gap-3 group whitespace-nowrap"
             >
-              Weiter zu my-pixel.click <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              Dein Pixel sichern <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
         </div>
