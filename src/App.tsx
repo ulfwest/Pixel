@@ -541,19 +541,41 @@ export default function App() {
 
   if (showIntro) {
     return (
-      <div className="w-screen h-screen overflow-hidden bg-[#050B14] relative">
-        <iframe 
-          src="https://werbe-pixel.vercel.app" 
-          className="w-full h-full border-none"
-          title="Intro App"
-        ></iframe>
-        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-50">
-          <button 
-            onClick={() => setShowIntro(false)} 
-            className="px-8 py-4 bg-[#050B14]/60 backdrop-blur-md border border-[#00F0FF]/50 text-[#00F0FF] font-bold rounded-full hover:bg-[#00F0FF] hover:text-black shadow-[0_0_20px_rgba(0,240,255,0.3)] hover:shadow-[0_0_40px_rgba(0,240,255,0.6)] transition-all flex items-center gap-3 group whitespace-nowrap"
-          >
-            Zu my-pixel.click <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-          </button>
+      <div className="min-h-screen bg-[#050B14] text-white flex flex-col relative z-50">
+        {/* Pixel Background */}
+        <div 
+          className="fixed inset-0 z-0 pointer-events-none"
+          style={{
+            backgroundImage: 'linear-gradient(to right, rgba(0, 240, 255, 0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 240, 255, 0.05) 1px, transparent 1px)',
+            backgroundSize: '20px 20px',
+          }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-b from-[#050B14] via-[#050B14]/80 to-[#050B14]"></div>
+        </div>
+
+        <div className="flex-1 max-w-7xl mx-auto w-full px-4 py-12 flex flex-col relative z-10 min-h-screen">
+          <div className="text-center mb-8">
+            <h2 className="text-4xl md:text-6xl font-black mb-4 uppercase tracking-tighter text-[#00F0FF] drop-shadow-[0_0_15px_rgba(0,240,255,0.4)]">Partner & Integration</h2>
+            <p className="text-white/60 text-lg">Willkommen! Die nahtlose Einbindung der externen Werbe-Pixel Applikation.</p>
+          </div>
+          
+          <div className="flex-1 w-full border border-[#00F0FF]/30 rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(0,240,255,0.1)] relative group mb-8 flex flex-col">
+            <div className="absolute inset-0 pointer-events-none border border-[#00F0FF]/20 rounded-2xl z-20 mix-blend-overlay"></div>
+            <iframe 
+              src="https://werbe-pixel.vercel.app" 
+              className="w-full flex-1 bg-[#050B14] z-10"
+              title="Werbe Pixel External App"
+            ></iframe>
+          </div>
+
+          <div className="flex justify-center pb-4">
+            <button 
+              onClick={() => setShowIntro(false)} 
+              className="px-8 py-4 bg-[#00F0FF] text-black font-bold rounded-full hover:bg-white shadow-[0_0_20px_rgba(0,240,255,0.3)] hover:shadow-[0_0_40px_rgba(0,240,255,0.6)] transition-all flex items-center gap-3 group whitespace-nowrap"
+            >
+              Weiter zu my-pixel.click <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </button>
+          </div>
         </div>
       </div>
     );
