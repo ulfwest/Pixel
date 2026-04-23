@@ -760,7 +760,7 @@ export default function App() {
           </div>
 
           <div className="mt-12">
-            <h3 className="text-2xl font-bold tracking-tight mb-8 text-[#00F0FF] border-b border-[#00F0FF]/20 pb-4 inline-block">Wichtige Fragen</h3>
+            <h3 className="text-4xl font-bold tracking-tight mb-6 text-[#00F0FF] drop-shadow-[0_0_10px_rgba(0,240,255,0.5)]">Wichtige Fragen</h3>
             <div className="space-y-4">
               {[
                 {
