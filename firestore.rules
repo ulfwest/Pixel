@@ -45,16 +45,17 @@ service cloud.firestore {
     }
 
     // Public Board Collections
-    match /blocks/{blockId} {
-      // The pixel board is explicitly public for rendering
-      allow read: if true;
+    match /{collection}/{blockId} {
+      allow read: if collection in ['blocks', 'youtuber_blocks', 'crypto_blocks', 'gaming_blocks', 'startup_blocks', 'art_blocks'];
       
-      allow create: if isVerifiedEmail() &&
+      allow create: if collection in ['blocks', 'youtuber_blocks', 'crypto_blocks', 'gaming_blocks', 'startup_blocks', 'art_blocks'] &&
+                    isVerifiedEmail() &&
                     isValidId(blockId) &&
                     isValidBlock(incoming()) &&
                     incoming().keys().size() >= 8 && incoming().keys().size() <= 9;
                     
-      allow update: if isVerifiedEmail() &&
+      allow update: if collection in ['blocks', 'youtuber_blocks', 'crypto_blocks', 'gaming_blocks', 'startup_blocks', 'art_blocks'] &&
+                    isVerifiedEmail() &&
                     existing().ownerId == request.auth.uid &&
                     isValidId(blockId) &&
                     isValidBlock(incoming()) &&
@@ -62,27 +63,8 @@ service cloud.firestore {
                     incoming().keys().hasAll(['x', 'y', 'w', 'h', 'color', 'title', 'link', 'ownerId']) &&
                     incoming().diff(existing()).affectedKeys().hasOnly(['x', 'y', 'w', 'h', 'color', 'title', 'link', 'imageUrl']);
                     
-      allow delete: if isVerifiedEmail() &&
-                    existing().ownerId == request.auth.uid;
-    }
-
-    match /youtuber_blocks/{blockId} {
-      allow read: if true;
-      
-      allow create: if isVerifiedEmail() &&
-                    isValidId(blockId) &&
-                    isValidBlock(incoming()) &&
-                    incoming().keys().size() >= 8 && incoming().keys().size() <= 9;
-                    
-      allow update: if isVerifiedEmail() &&
-                    existing().ownerId == request.auth.uid &&
-                    isValidId(blockId) &&
-                    isValidBlock(incoming()) &&
-                    incoming().ownerId == existing().ownerId &&
-                    incoming().keys().hasAll(['x', 'y', 'w', 'h', 'color', 'title', 'link', 'ownerId']) &&
-                    incoming().diff(existing()).affectedKeys().hasOnly(['x', 'y', 'w', 'h', 'color', 'title', 'link', 'imageUrl']);
-                    
-      allow delete: if isVerifiedEmail() &&
+      allow delete: if collection in ['blocks', 'youtuber_blocks', 'crypto_blocks', 'gaming_blocks', 'startup_blocks', 'art_blocks'] &&
+                    isVerifiedEmail() &&
                     existing().ownerId == request.auth.uid;
     }
   }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { motion } from 'motion/react';
-import { MousePointerClick, Info, ArrowRight, CheckCircle2, X, ZoomIn, ZoomOut, Maximize, Plus, Minus, Volume2, VolumeX, Share2, Upload, LogIn, LogOut, ChevronDown, Youtube } from 'lucide-react';
+import { MousePointerClick, Info, ArrowRight, CheckCircle2, X, ZoomIn, ZoomOut, Maximize, Plus, Minus, Volume2, VolumeX, Share2, Upload, LogIn, LogOut, ChevronDown, Youtube, Coins, Gamepad2, Rocket, Palette } from 'lucide-react';
 import { db, auth, signInWithGoogle, logout, testConnection, handleFirestoreError } from './firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { collection, onSnapshot, setDoc, doc, updateDoc } from 'firebase/firestore';
@@ -49,7 +49,8 @@ export default function App() {
   const [isAuthChecking, setIsAuthChecking] = useState(true);
   const [showIntro, setShowIntro] = useState(true);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [gridType, setGridType] = useState<'standard' | 'youtuber'>('standard');
+  type GridCategory = 'standard' | 'youtuber' | 'crypto' | 'gaming' | 'startup' | 'art';
+  const [gridType, setGridType] = useState<GridCategory>('standard');
 
   const audioRef = useRef<HTMLAudioElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -87,7 +88,7 @@ export default function App() {
     setFormData({ title: '', link: '', color: '#00F0FF', imageUrl: '' });
 
     // Firestore Realtime Listener
-    const collectionName = gridType === 'standard' ? 'blocks' : 'youtuber_blocks';
+    const collectionName = gridType === 'standard' ? 'blocks' : `${gridType}_blocks`;
     const colRef = collection(db, collectionName);
     const unsubscribeBlocks = onSnapshot(colRef, (snapshot) => {
       const loadedBlocks: Block[] = snapshot.docs.map(doc => ({
@@ -293,7 +294,7 @@ export default function App() {
            alert("Du kannst nur deine eigenen Blöcke verschieben.");
         } else {
            try {
-             const collectionName = gridType === 'standard' ? 'blocks' : 'youtuber_blocks';
+             const collectionName = gridType === 'standard' ? 'blocks' : `${gridType}_blocks`;
              await updateDoc(doc(db, collectionName, block.id), {
                x: dragPos.x,
                y: dragPos.y
@@ -457,7 +458,7 @@ export default function App() {
     if (canResize(popupBlock.id, popupBlock.x, popupBlock.y, newW, newH)) {
       try {
         const updatedBlock = { ...popupBlock, w: newW, h: newH };
-        const collectionName = gridType === 'standard' ? 'blocks' : 'youtuber_blocks';
+        const collectionName = gridType === 'standard' ? 'blocks' : `${gridType}_blocks`;
         await updateDoc(doc(db, collectionName, popupBlock.id), {
           w: newW,
           h: newH
@@ -504,7 +505,7 @@ export default function App() {
     }
 
     try {
-      const collectionName = gridType === 'standard' ? 'blocks' : 'youtuber_blocks';
+      const collectionName = gridType === 'standard' ? 'blocks' : `${gridType}_blocks`;
       await setDoc(doc(db, collectionName, blockId), newBlock);
       setSelectedCell(null);
       setIsSidebarOpen(false);
@@ -704,20 +705,41 @@ export default function App() {
       <div className="flex justify-center pt-16 pb-4">
         <div className="flex flex-col items-center">
           <p className="text-white text-sm uppercase tracking-[0.2em] font-bold mb-4 drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">Wähle dein Raster</p>
-          <div className="flex items-center bg-[#0A101A] border-2 border-white/10 rounded-full p-2 shadow-[0_0_20px_rgba(0,0,0,0.5)] relative">
-            <button 
-              onClick={() => setGridType('standard')}
-              className={`px-8 py-3 rounded-full text-base font-bold font-mono transition-all duration-300 uppercase tracking-widest z-10 relative ${gridType === 'standard' ? 'bg-[#00F0FF] text-black shadow-[0_0_20px_rgba(0,240,255,0.5)]' : 'text-white/60 hover:text-white hover:bg-white/5'}`}
-            >
-              Standard
-            </button>
-            <button 
-              onClick={() => setGridType('youtuber')}
-              className={`flex items-center gap-2 px-8 py-3 rounded-full text-base font-bold font-mono transition-all duration-300 uppercase tracking-widest z-10 relative ${gridType === 'youtuber' ? 'bg-[#FF0000] text-white shadow-[0_0_20px_rgba(255,0,0,0.5)]' : 'text-white/60 hover:text-white hover:bg-white/5'}`}
-            >
-              <Youtube className={`w-5 h-5 ${gridType === 'youtuber' ? 'text-white' : 'text-current'}`} />
-              YouTuber
-            </button>
+          <div className="flex flex-wrap justify-center items-center gap-1 sm:gap-2 max-w-4xl mx-auto bg-[#0A101A] border-2 border-white/10 rounded-[2rem] p-2 shadow-[0_0_20px_rgba(0,0,0,0.5)] relative">
+            {(
+              [
+                { id: 'standard', label: 'Standard', color: '#00F0FF', icon: null },
+                { id: 'youtuber', label: 'YouTuber', color: '#FF0000', icon: Youtube },
+                { id: 'crypto', label: 'Crypto', color: '#F7931A', icon: Coins },
+                { id: 'gaming', label: 'Gaming', color: '#9146FF', icon: Gamepad2 },
+                { id: 'startup', label: 'Startups', color: '#10B981', icon: Rocket },
+                { id: 'art', label: 'Art', color: '#EC4899', icon: Palette },
+              ] as const
+            ).map(category => {
+              const Icon = category.icon;
+              const isActive = gridType === category.id;
+              
+              let activeStyle = '';
+              if (isActive) {
+                if (category.id === 'standard') activeStyle = 'bg-[#00F0FF] text-black shadow-[0_0_20px_rgba(0,240,255,0.5)]';
+                else if (category.id === 'youtuber') activeStyle = 'bg-[#FF0000] text-white shadow-[0_0_20px_rgba(255,0,0,0.5)]';
+                else if (category.id === 'crypto') activeStyle = 'bg-[#F7931A] text-black shadow-[0_0_20px_rgba(247,147,26,0.5)]';
+                else if (category.id === 'gaming') activeStyle = 'bg-[#9146FF] text-white shadow-[0_0_20px_rgba(145,70,255,0.5)]';
+                else if (category.id === 'startup') activeStyle = 'bg-[#10B981] text-white shadow-[0_0_20px_rgba(16,185,129,0.5)]';
+                else if (category.id === 'art') activeStyle = 'bg-[#EC4899] text-white shadow-[0_0_20px_rgba(236,72,153,0.5)]';
+              }
+
+              return (
+                <button 
+                  key={category.id}
+                  onClick={() => setGridType(category.id as GridCategory)}
+                  className={`flex items-center gap-2 px-5 py-2 sm:px-6 sm:py-2.5 rounded-full text-xs sm:text-sm md:text-base font-bold font-mono transition-all duration-300 uppercase tracking-widest z-10 relative ${isActive ? activeStyle : 'text-white/60 hover:text-white hover:bg-white/5'}`}
+                >
+                  {Icon && <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${isActive ? (['standard', 'crypto'].includes(category.id) ? 'text-black' : 'text-white') : 'text-current'}`} />}
+                  {category.label}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
