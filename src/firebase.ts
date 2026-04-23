@@ -24,8 +24,9 @@ export const googleProvider = new GoogleAuthProvider();
 export const signInWithGoogle = async () => {
   try {
     await signInWithPopup(auth, googleProvider);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error signing in with Google", error);
+    alert("Fehler beim Anmelden mit Google: " + (error.message || JSON.stringify(error)) + ".\n\nBitte öffne diese App in einem neuen Tab (oben rechts in der Ecke), falls du dich in einem iFrame/Preview befindest, da Google Logins oft in eingebetteten Ansichten blockiert werden.");
   }
 };
 
