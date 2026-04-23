@@ -636,22 +636,6 @@ export default function App() {
             <div className="w-4 h-4 bg-[#00F0FF] rounded-sm shadow-[0_0_10px_rgba(0,240,255,0.5)]"></div>
             <span className="font-mono font-bold tracking-tight text-lg uppercase hidden sm:inline-block">my-pixel.click</span>
           </div>
-          
-          {/* Grid Type Switcher */}
-          <div className="flex items-center bg-[#0A101A] border border-[#00F0FF]/30 rounded-full p-1 shadow-inner">
-            <button 
-              onClick={() => setGridType('standard')}
-              className={`px-4 py-1.5 rounded-full text-xs font-bold font-mono transition-all uppercase tracking-wider ${gridType === 'standard' ? 'bg-[#00F0FF] text-black shadow-[0_0_10px_rgba(0,240,255,0.5)]' : 'text-white/50 hover:text-white'}`}
-            >
-              Standard
-            </button>
-            <button 
-              onClick={() => setGridType('youtuber')}
-              className={`px-4 py-1.5 rounded-full text-xs font-bold font-mono transition-all uppercase tracking-wider ${gridType === 'youtuber' ? 'bg-[#00F0FF] text-black shadow-[0_0_10px_rgba(0,240,255,0.5)]' : 'text-white/50 hover:text-white'}`}
-            >
-              YouTuber
-            </button>
-          </div>
 
           <nav className="flex items-center gap-4 sm:gap-6 text-sm font-medium text-white/60">
             <a href="#about" className="hover:text-white transition-colors hidden md:block">So funktioniert's</a>
@@ -715,6 +699,27 @@ export default function App() {
           </motion.div>
         </div>
       </section>
+
+      {/* Grid Switcher */}
+      <div className="flex justify-center pt-16 pb-4">
+        <div className="flex flex-col items-center">
+          <p className="text-[#00F0FF] text-sm uppercase tracking-[0.2em] font-bold mb-4 drop-shadow-[0_0_10px_rgba(0,240,255,0.5)]">Wähle dein Raster</p>
+          <div className="flex items-center bg-[#0A101A] border-2 border-[#00F0FF]/30 rounded-full p-2 shadow-[0_0_20px_rgba(0,240,255,0.15)] relative">
+            <button 
+              onClick={() => setGridType('standard')}
+              className={`px-8 py-3 rounded-full text-base font-bold font-mono transition-all duration-300 uppercase tracking-widest z-10 relative ${gridType === 'standard' ? 'bg-[#00F0FF] text-black shadow-[0_0_20px_rgba(0,240,255,0.5)]' : 'text-white/60 hover:text-white hover:bg-white/5'}`}
+            >
+              Standard
+            </button>
+            <button 
+              onClick={() => setGridType('youtuber')}
+              className={`px-8 py-3 rounded-full text-base font-bold font-mono transition-all duration-300 uppercase tracking-widest z-10 relative ${gridType === 'youtuber' ? 'bg-[#00F0FF] text-black shadow-[0_0_20px_rgba(0,240,255,0.5)]' : 'text-white/60 hover:text-white hover:bg-white/5'}`}
+            >
+              YouTuber
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* Stats Marquee */}
       <div className="py-8 overflow-hidden flex whitespace-nowrap">
