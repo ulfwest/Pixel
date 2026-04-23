@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { motion } from 'motion/react';
-import { MousePointerClick, Info, ArrowRight, CheckCircle2, X, ZoomIn, ZoomOut, Maximize, Plus, Minus, Volume2, VolumeX, Share2, Upload, LogIn, LogOut } from 'lucide-react';
+import { MousePointerClick, Info, ArrowRight, CheckCircle2, X, ZoomIn, ZoomOut, Maximize, Plus, Minus, Volume2, VolumeX, Share2, Upload, LogIn, LogOut, ChevronDown } from 'lucide-react';
 import { db, auth, signInWithGoogle, logout, testConnection, handleFirestoreError } from './firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { collection, onSnapshot, setDoc, doc, updateDoc } from 'firebase/firestore';
@@ -48,6 +48,7 @@ export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthChecking, setIsAuthChecking] = useState(true);
   const [showIntro, setShowIntro] = useState(true);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   const audioRef = useRef<HTMLAudioElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -719,7 +720,7 @@ export default function App() {
       {/* About Section */}
       <section id="about" className="py-24 px-6 border-b border-white/10">
         <div className="max-w-4xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
+          <div className="grid md:grid-cols-2 gap-12 items-center mb-16">
             <div>
               <h2 className="text-4xl font-bold tracking-tight mb-6 text-[#00F0FF] drop-shadow-[0_0_10px_rgba(0,240,255,0.5)]">So funktioniert's</h2>
               <div className="space-y-6 text-white/70">
@@ -755,6 +756,41 @@ export default function App() {
                 <div className="text-3xl font-bold text-[#00F0FF] mb-2 drop-shadow-[0_0_8px_rgba(0,240,255,0.5)] text-center">∞</div>
                 <div className="text-sm text-white/50 uppercase tracking-wider font-mono text-center">Für immer</div>
               </div>
+            </div>
+          </div>
+
+          <div className="mt-12">
+            <h3 className="text-2xl font-bold tracking-tight mb-8 text-[#00F0FF] border-b border-[#00F0FF]/20 pb-4 inline-block">Wichtige Fragen</h3>
+            <div className="space-y-4">
+              {[
+                {
+                  q: "Warum registrieren?",
+                  a: "Um Blöcke zu kaufen, zu bearbeiten oder zu reservieren, empfehlen wir die Anmeldung mit einem sicheren Google-Klick. Dadurch stellen wir sicher, dass nur du im Nachhinein Änderungen an deinen gekauften Pixeln vornehmen kannst und dein Eigentum dauerhaft mit deinem Account verbunden bleibt."
+                },
+                {
+                  q: "Wie kaufe ich einen Block?",
+                  a: "Ganz einfach: Melde dich an, klicke auf einen freien (transparenten) Bereich im Raster, wähle die gewünschte Größe deines Blocks in der Seitenleiste und lade optional ein Bild sowie einen Link hoch. Danach wirst du aufgefordert, per PayPal zu spenden. Sobald das erledigt ist, gehört der Block dir!"
+                },
+                {
+                  q: "Kann ich den Inhalt meines Pixels später noch abändern?",
+                  a: "Ja! Da dein Pixel mit deinem Account verknüpft ist, kannst du jederzeit darauf klicken und den hinterlegten Link, das Bild oder die Blockfarbe updaten und anpassen."
+                }
+              ].map((faq, index) => (
+                <div key={index} className="border border-[#00F0FF]/20 rounded-lg bg-[#0A101A] overflow-hidden transition-all duration-300">
+                  <button
+                    onClick={() => setOpenFaq(openFaq === index ? null : index)}
+                    className="w-full flex items-center justify-between p-6 text-left hover:bg-white/5 transition-colors focus:outline-none"
+                  >
+                    <span className="font-bold text-lg">{faq.q}</span>
+                    <ChevronDown className={`w-5 h-5 text-[#00F0FF] transition-transform duration-300 ${openFaq === index ? 'rotate-180' : ''}`} />
+                  </button>
+                  {openFaq === index && (
+                    <div className="p-6 pt-0 text-white/70 leading-relaxed border-t border-white/5 mt-2 bg-[#050B14]/50">
+                      {faq.a}
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         </div>
