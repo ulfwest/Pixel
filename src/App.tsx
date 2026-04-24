@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { motion } from 'motion/react';
-import { MousePointerClick, Info, ArrowRight, CheckCircle2, X, ZoomIn, ZoomOut, Maximize, Plus, Minus, Volume2, VolumeX, Share2, Upload, LogIn, LogOut, ChevronDown, Youtube, Coins, Gamepad2, Rocket, Palette, Play, ThumbsUp, MessageSquare, TrendingUp, Wallet, Twitch, Eye, ArrowUp, Heart, Sparkles, Activity } from 'lucide-react';
+import { MousePointerClick, Info, ArrowRight, CheckCircle2, X, ZoomIn, ZoomOut, Maximize, Plus, Minus, Volume2, VolumeX, Share2, Upload, LogIn, LogOut, ChevronDown, Youtube, Coins, Gamepad2, Rocket, Palette, Play, ThumbsUp, MessageSquare, TrendingUp, Wallet, Twitch, Eye, ArrowUp, Heart, Sparkles, Activity, Twitter, Facebook } from 'lucide-react';
 import { db, auth, signInWithGoogle, logout, testConnection, handleFirestoreError } from './firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { collection, onSnapshot, setDoc, doc, updateDoc } from 'firebase/firestore';
@@ -44,6 +44,7 @@ export default function App() {
 
   const [hasClickedDonate, setHasClickedDonate] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+  const [isPageCopied, setIsPageCopied] = useState(false);
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [isAuthChecking, setIsAuthChecking] = useState(true);
@@ -496,6 +497,16 @@ export default function App() {
     }
   };
 
+  const handlePageShare = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setIsPageCopied(true);
+      setTimeout(() => setIsPageCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy', err);
+    }
+  };
+
   const handlePaymentSuccess = async () => {
     if (!selectedCell || !user) return;
 
@@ -653,6 +664,25 @@ export default function App() {
           <nav className="flex items-center gap-4 sm:gap-6 text-sm font-medium text-white/60">
             <a href="#about" className="hover:text-white transition-colors hidden md:block">So funktioniert's</a>
             <a href="#grid" className="hover:text-white transition-colors border-r border-white/20 pr-4 sm:pr-6 hidden sm:block">Das Raster</a>
+            
+            <div className="flex items-center gap-2 border-r border-white/20 pr-4 sm:pr-6">
+              <button 
+                onClick={handlePageShare}
+                className="flex items-center justify-center p-1.5 sm:p-2 rounded-full bg-white/5 hover:bg-[#00F0FF]/20 text-[#00F0FF] transition-colors border border-white/10 hover:border-[#00F0FF]/50"
+                title="Seite URL kopieren"
+              >
+                {isPageCopied ? <CheckCircle2 className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
+              </button>
+              <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=Schau%20dir%20mein%20Raster%20an!`} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center p-1.5 sm:p-2 rounded-full bg-white/5 hover:bg-[#1DA1F2]/20 text-[#1DA1F2] transition-colors border border-white/10 hover:border-[#1DA1F2]/50" title="Auf Twitter teilen">
+                <Twitter className="w-4 h-4" />
+              </a>
+              <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`} target="_blank" rel="noopener noreferrer" className="hidden sm:flex items-center justify-center p-1.5 sm:p-2 rounded-full bg-white/5 hover:bg-[#1877F2]/20 text-[#1877F2] transition-colors border border-white/10 hover:border-[#1877F2]/50" title="Auf Facebook teilen">
+                <Facebook className="w-4 h-4" />
+              </a>
+              <a href={`https://wa.me/?text=${encodeURIComponent('Schau dir mein Raster an! ' + window.location.href)}`} target="_blank" rel="noopener noreferrer" className="hidden sm:flex items-center justify-center p-1.5 sm:p-2 rounded-full bg-white/5 hover:bg-[#25D366]/20 text-[#25D366] transition-colors border border-white/10 hover:border-[#25D366]/50" title="Auf WhatsApp teilen">
+                <MessageSquare className="w-4 h-4" />
+              </a>
+            </div>
             
             {/* Auth Button */}
             {!isAuthChecking && (
@@ -1162,6 +1192,24 @@ export default function App() {
             <span className="font-mono font-bold tracking-tight uppercase">my-pixel.click</span>
           </div>
           <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8">
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={handlePageShare}
+                className="flex items-center justify-center p-2 rounded-full bg-white/5 hover:bg-[#00F0FF]/20 text-white/60 hover:text-[#00F0FF] transition-colors border border-white/10 hover:border-[#00F0FF]/30"
+                title="Seite URL kopieren"
+              >
+                {isPageCopied ? <CheckCircle2 className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}
+              </button>
+              <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=Schau%20dir%20mein%20Raster%20an!`} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center p-2 rounded-full bg-white/5 hover:bg-[#1DA1F2]/20 text-white/60 hover:text-[#1DA1F2] transition-colors border border-white/10 hover:border-[#1DA1F2]/30" title="Auf Twitter teilen">
+                <Twitter className="w-5 h-5" />
+              </a>
+              <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center p-2 rounded-full bg-white/5 hover:bg-[#1877F2]/20 text-white/60 hover:text-[#1877F2] transition-colors border border-white/10 hover:border-[#1877F2]/30" title="Auf Facebook teilen">
+                <Facebook className="w-5 h-5" />
+              </a>
+              <a href={`https://wa.me/?text=${encodeURIComponent('Schau dir mein Raster an! ' + window.location.href)}`} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center p-2 rounded-full bg-white/5 hover:bg-[#25D366]/20 text-white/60 hover:text-[#25D366] transition-colors border border-white/10 hover:border-[#25D366]/30" title="Auf WhatsApp teilen">
+                <MessageSquare className="w-5 h-5" />
+              </a>
+            </div>
             <div className="flex flex-wrap items-center justify-center gap-4">
               <button 
                 onClick={() => setIsImpressumOpen(true)} 
