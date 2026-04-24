@@ -110,6 +110,17 @@ export default function App() {
     drawGrid();
   }, [blocks, selectedCell, draggingBlockId, dragPos, hoverCell, imageTick]);
 
+  const GRID_CATEGORIES = [
+    { id: 'standard', label: 'Standard', color: '#00F0FF', icon: null },
+    { id: 'youtuber', label: 'YouTuber', color: '#FF0000', icon: Youtube },
+    { id: 'crypto', label: 'Crypto', color: '#F7931A', icon: Coins },
+    { id: 'gaming', label: 'Gaming', color: '#9146FF', icon: Gamepad2 },
+    { id: 'startup', label: 'Startups', color: '#10B981', icon: Rocket },
+    { id: 'art', label: 'Art', color: '#EC4899', icon: Palette },
+  ] as const;
+
+  const activeCategory = GRID_CATEGORIES.find(c => c.id === gridType) || GRID_CATEGORIES[0];
+
   const drawGrid = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -707,16 +718,7 @@ export default function App() {
         <div className="flex flex-col items-center">
           <p className="text-white text-sm uppercase tracking-[0.2em] font-bold mb-4 drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">Wähle dein Raster</p>
           <div className="flex flex-wrap justify-center items-center gap-1 sm:gap-2 max-w-4xl mx-auto bg-[#0A101A] border-2 border-white/10 rounded-[2rem] p-2 shadow-[0_0_20px_rgba(0,0,0,0.5)] relative">
-            {(
-              [
-                { id: 'standard', label: 'Standard', color: '#00F0FF', icon: null },
-                { id: 'youtuber', label: 'YouTuber', color: '#FF0000', icon: Youtube },
-                { id: 'crypto', label: 'Crypto', color: '#F7931A', icon: Coins },
-                { id: 'gaming', label: 'Gaming', color: '#9146FF', icon: Gamepad2 },
-                { id: 'startup', label: 'Startups', color: '#10B981', icon: Rocket },
-                { id: 'art', label: 'Art', color: '#EC4899', icon: Palette },
-              ] as const
-            ).map(category => {
+            {GRID_CATEGORIES.map(category => {
               const Icon = category.icon;
               const isActive = gridType === category.id;
               
@@ -861,13 +863,52 @@ export default function App() {
       {/* Grid Section */}
       <section id="grid" className="py-24 px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl font-bold tracking-tight text-[#00F0FF] drop-shadow-[0_0_10px_rgba(0,240,255,0.5)]">Das Raster</h2>
-            <div className="flex flex-col lg:flex-row items-end lg:items-center gap-3">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#00F0FF]/30 bg-[#00F0FF]/10 text-[#00F0FF] text-xs font-mono shadow-[0_0_15px_rgba(0,240,255,0.2)] uppercase">
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+            <div className="flex items-center gap-4">
+              <h2 
+                className="text-3xl font-bold tracking-tight transition-colors duration-300"
+                style={{ 
+                  color: activeCategory.color, 
+                  textShadow: `0 0 10px ${activeCategory.color}80` 
+                }}
+              >
+                Das Raster
+              </h2>
+              <div 
+                className="px-4 py-1.5 rounded-full backdrop-blur-sm text-sm font-bold tracking-widest uppercase flex items-center gap-2 transition-all duration-300"
+                style={{ 
+                  color: activeCategory.color, 
+                  borderColor: activeCategory.color, 
+                  borderWidth: '1px',
+                  backgroundColor: `${activeCategory.color}15`,
+                  boxShadow: `0 0 10px ${activeCategory.color}40`
+                }}
+              >
+                {activeCategory.icon && <activeCategory.icon className="w-4 h-4" />}
+                {activeCategory.label}
+              </div>
+            </div>
+            <div className="flex flex-col lg:flex-row items-start md:items-end lg:items-center gap-3">
+              <div 
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-mono uppercase transition-all duration-300"
+                style={{
+                  color: activeCategory.color,
+                  borderColor: `${activeCategory.color}40`,
+                  backgroundColor: `${activeCategory.color}15`,
+                  boxShadow: `0 0 15px ${activeCategory.color}30`
+                }}
+              >
                 <MousePointerClick className="w-3.5 h-3.5" /> Klicke auf einen leeren Block, um ihn durch eine Spende zu beanspruchen
               </div>
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#00F0FF]/30 bg-[#00F0FF]/10 text-[#00F0FF] text-xs font-mono shadow-[0_0_15px_rgba(0,240,255,0.2)] uppercase">
+              <div 
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-mono uppercase transition-all duration-300"
+                style={{
+                  color: activeCategory.color,
+                  borderColor: `${activeCategory.color}40`,
+                  backgroundColor: `${activeCategory.color}15`,
+                  boxShadow: `0 0 15px ${activeCategory.color}30`
+                }}
+              >
                 <Info className="w-3.5 h-3.5" /> Klicke auf einen gefüllten Block, um ihn zu besuchen
               </div>
             </div>
@@ -1291,7 +1332,11 @@ export default function App() {
           <motion.div 
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            className="bg-[#0A101A] border border-[#00F0FF]/30 rounded-2xl p-0 max-w-lg w-full shadow-[0_0_50px_rgba(0,240,255,0.15)] relative overflow-hidden flex flex-col"
+            className="bg-[#0A101A] border rounded-2xl p-0 max-w-lg w-full relative overflow-hidden flex flex-col"
+            style={{
+              borderColor: `${activeCategory.color}40`,
+              boxShadow: `0 0 50px ${activeCategory.color}25`
+            }}
             onClick={e => e.stopPropagation()}
           >
             <button 
@@ -1325,9 +1370,16 @@ export default function App() {
                   href={popupBlock.link} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 text-[#00F0FF] hover:text-white transition-colors w-fit group/link"
+                  className="inline-flex items-center gap-2 transition-colors w-fit group/link hover:text-white"
+                  style={{ color: activeCategory.color }}
                 >
-                  <span className="font-mono text-sm truncate max-w-[280px] sm:max-w-[350px] bg-[#00F0FF]/10 px-3 py-1.5 rounded-md border border-[#00F0FF]/20 group-hover/link:bg-[#00F0FF]/20">{popupBlock.link}</span>
+                  <span 
+                    className="font-mono text-sm truncate max-w-[280px] sm:max-w-[350px] px-3 py-1.5 rounded-md border transition-colors"
+                    style={{ 
+                      backgroundColor: `${activeCategory.color}15`, 
+                      borderColor: `${activeCategory.color}30` 
+                    }}
+                  >{popupBlock.link}</span>
                   <ArrowRight className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" />
                 </a>
               </div>
@@ -1351,17 +1403,17 @@ export default function App() {
                     <div className="flex justify-between items-center gap-4">
                       <span className="text-xs uppercase tracking-wider text-white/50">Breite</span>
                       <div className="flex items-center gap-2 bg-[#050B14] px-1 py-0.5 rounded border border-white/5">
-                        <button onClick={() => handleResize(-1, 0)} className="text-white/40 hover:text-[#00F0FF] disabled:opacity-30 p-1 transition-colors" disabled={popupBlock.w <= 1}><Minus className="w-3 h-3" /></button>
+                        <button onClick={() => handleResize(-1, 0)} className="text-white/40 disabled:opacity-30 p-1 transition-colors hover:text-white" disabled={popupBlock.w <= 1}><Minus className="w-3 h-3" /></button>
                         <span className="w-6 text-center text-white font-mono text-sm">{popupBlock.w}</span>
-                        <button onClick={() => handleResize(1, 0)} className="text-white/40 hover:text-[#00F0FF] p-1 transition-colors"><Plus className="w-3 h-3" /></button>
+                        <button onClick={() => handleResize(1, 0)} className="text-white/40 p-1 transition-colors hover:text-white"><Plus className="w-3 h-3" /></button>
                       </div>
                     </div>
                     <div className="flex justify-between items-center gap-4">
                       <span className="text-xs uppercase tracking-wider text-white/50">Höhe</span>
                       <div className="flex items-center gap-2 bg-[#050B14] px-1 py-0.5 rounded border border-white/5">
-                        <button onClick={() => handleResize(0, -1)} className="text-white/40 hover:text-[#00F0FF] disabled:opacity-30 p-1 transition-colors" disabled={popupBlock.h <= 1}><Minus className="w-3 h-3" /></button>
+                        <button onClick={() => handleResize(0, -1)} className="text-white/40 disabled:opacity-30 p-1 transition-colors hover:text-white" disabled={popupBlock.h <= 1}><Minus className="w-3 h-3" /></button>
                         <span className="w-6 text-center text-white font-mono text-sm">{popupBlock.h}</span>
-                        <button onClick={() => handleResize(0, 1)} className="text-white/40 hover:text-[#00F0FF] p-1 transition-colors"><Plus className="w-3 h-3" /></button>
+                        <button onClick={() => handleResize(0, 1)} className="text-white/40 p-1 transition-colors hover:text-white"><Plus className="w-3 h-3" /></button>
                       </div>
                     </div>
                   </div>
@@ -1382,20 +1434,25 @@ export default function App() {
               <div className="flex gap-3 mt-2">
                 <button
                   onClick={handleShare}
-                  className="px-5 py-4 bg-[#050B14] border border-white/10 text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-white/5 hover:border-[#00F0FF]/50 transition-all group relative shadow-inner"
+                  className="px-5 py-4 bg-[#050B14] border border-white/10 text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-white/5 transition-all group relative shadow-inner"
+                  style={{ '--hover-color': activeCategory.color } as React.CSSProperties}
                   title="URL kopieren"
                 >
                   {isCopied ? (
-                    <CheckCircle2 className="w-5 h-5 text-[#00F0FF]" />
+                    <CheckCircle2 className="w-5 h-5 text-current" style={{ color: activeCategory.color }} />
                   ) : (
-                    <Share2 className="w-5 h-5 text-white/70 group-hover:text-[#00F0FF]" />
+                    <Share2 className="w-5 h-5 text-white/70 group-hover:text-white" />
                   )}
                 </button>
                 <a 
                   href={popupBlock.link} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="flex-1 py-4 bg-[#00F0FF] text-black font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-white hover:shadow-[0_0_30px_rgba(0,240,255,0.6)] transition-all uppercase tracking-wide"
+                  className="flex-1 py-4 text-black font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-white transition-all uppercase tracking-wide"
+                  style={{ 
+                    backgroundColor: activeCategory.color,
+                    boxShadow: `0 0 15px ${activeCategory.color}60`
+                  }}
                 >
                   Website Besuchen <ArrowRight className="w-5 h-5" />
                 </a>
