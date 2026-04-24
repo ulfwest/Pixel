@@ -86,6 +86,7 @@ export default function App() {
     setSelectedCell(null);
     setHoverCell(null);
     setFormData({ title: '', link: '', color: '#00F0FF', imageUrl: '' });
+    setBlocks([]); // Clear existing blocks to prevent flashing old grid data
 
     // Firestore Realtime Listener
     const collectionName = gridType === 'standard' ? 'blocks' : `${gridType}_blocks`;
