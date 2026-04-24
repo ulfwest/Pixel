@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { motion } from 'motion/react';
-import { MousePointerClick, Info, ArrowRight, CheckCircle2, X, ZoomIn, ZoomOut, Maximize, Plus, Minus, Volume2, VolumeX, Share2, Upload, LogIn, LogOut, ChevronDown, Youtube, Coins, Gamepad2, Rocket, Palette, Play, ThumbsUp, MessageSquare } from 'lucide-react';
+import { MousePointerClick, Info, ArrowRight, CheckCircle2, X, ZoomIn, ZoomOut, Maximize, Plus, Minus, Volume2, VolumeX, Share2, Upload, LogIn, LogOut, ChevronDown, Youtube, Coins, Gamepad2, Rocket, Palette, Play, ThumbsUp, MessageSquare, TrendingUp, Wallet, Twitch, Eye, ArrowUp, Heart, Sparkles, Activity } from 'lucide-react';
 import { db, auth, signInWithGoogle, logout, testConnection, handleFirestoreError } from './firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { collection, onSnapshot, setDoc, doc, updateDoc } from 'firebase/firestore';
@@ -1369,6 +1369,24 @@ export default function App() {
                    </div>
                 </div>
               )}
+              {gridType === 'crypto' && (
+                <div className="absolute inset-0 border-[4px] border-[#F7931A]/20 pointer-events-none p-4 flex flex-col justify-between mix-blend-screen opacity-50">
+                   <div className="w-full h-full border border-[#F7931A]/30 flex flex-col justify-center items-center gap-2">
+                      <Activity className="w-16 h-16 text-[#F7931A] opacity-20" />
+                   </div>
+                </div>
+              )}
+              {gridType === 'gaming' && (
+                <div className="absolute inset-0 pointer-events-none p-4 flex flex-col justify-between">
+                   <div className="flex justify-between items-start">
+                     <span className="bg-black/50 backdrop-blur-md px-2 py-1 rounded text-white text-xs font-bold flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>LIVE</span>
+                     <span className="bg-black/50 backdrop-blur-md px-2 py-1 rounded text-white text-xs font-bold flex items-center gap-1.5 border border-white/10"><Eye className="w-3 h-3 text-white/50" /> 24.5K</span>
+                   </div>
+                </div>
+              )}
+              {gridType === 'art' && (
+                 <div className="absolute inset-0 pointer-events-none border-[12px] border-white/5 shadow-[inset_0_0_50px_rgba(0,0,0,0.8)]"></div>
+              )}
 
               <div className="absolute inset-0 bg-gradient-to-t from-[#0A101A] via-transparent to-transparent opacity-80 pointer-events-none" />
             </div>
@@ -1382,13 +1400,38 @@ export default function App() {
                   <h3 className="text-3xl font-black text-white leading-tight tracking-tight">{popupBlock.title}</h3>
                   {gridType === 'youtuber' && (
                     <div className="flex bg-white/10 rounded-full overflow-hidden mt-1 shrink-0">
-                      <div className="px-3 py-1.5 flex items-center gap-1.5 border-r border-white/10 hover:bg-white/20 transition-colors">
+                      <div className="px-3 py-1.5 flex items-center gap-1.5 border-r border-white/10 hover:bg-white/20 transition-colors cursor-pointer">
                         <ThumbsUp className="w-4 h-4 text-white" />
                         <span className="text-xs font-bold text-white">Like</span>
                       </div>
-                      <div className="px-3 py-1.5 flex items-center hover:bg-white/20 transition-colors">
+                      <div className="px-3 py-1.5 flex items-center hover:bg-white/20 transition-colors cursor-pointer">
                          <MessageSquare className="w-4 h-4 text-white" />
                       </div>
+                    </div>
+                  )}
+                  {gridType === 'crypto' && (
+                    <div className="flex bg-[#F7931A]/10 text-[#F7931A] px-3 py-1.5 rounded-full text-xs font-bold gap-1.5 border border-[#F7931A]/20 items-center mt-1 shrink-0">
+                      <TrendingUp className="w-4 h-4" /> Trending
+                    </div>
+                  )}
+                  {gridType === 'gaming' && (
+                    <div className="flex bg-[#9146FF] text-white px-3 py-1.5 rounded text-xs font-bold gap-1.5 items-center mt-1 shrink-0 hover:bg-[#9146FF]/80 transition-colors cursor-pointer shadow-[0_0_15px_rgba(145,70,255,0.4)]">
+                      <Heart className="w-4 h-4 fill-current" /> Follow
+                    </div>
+                  )}
+                  {gridType === 'startup' && (
+                    <div className="flex flex-col bg-white/5 border border-white/10 rounded-md overflow-hidden mt-1 shrink-0 cursor-pointer hover:border-[#10B981]/50 transition-colors">
+                       <div className="px-3 py-1 flex items-center justify-center bg-white/5 hover:bg-[#10B981]/20 transition-colors text-[#10B981]">
+                          <ArrowUp className="w-4 h-4" />
+                       </div>
+                       <div className="px-3 py-1 flex items-center justify-center text-xs font-bold border-t border-white/10">
+                          428
+                       </div>
+                    </div>
+                  )}
+                  {gridType === 'art' && (
+                    <div className="flex bg-[#EC4899]/10 text-[#EC4899] px-3 py-1.5 rounded-full text-xs font-bold gap-1.5 border border-[#EC4899]/20 items-center mt-1 shrink-0 hover:bg-[#EC4899]/20 transition-colors cursor-pointer">
+                      <Sparkles className="w-4 h-4" /> Mint
                     </div>
                   )}
                 </div>
@@ -1406,11 +1449,12 @@ export default function App() {
                       borderColor: `${activeCategory.color}30` 
                     }}
                   >{popupBlock.link}</span>
-                  {gridType === 'youtuber' ? (
-                     <Youtube className="w-5 h-5 text-red-500 group-hover/link:scale-110 transition-transform" />
-                  ) : (
-                    <ArrowRight className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" />
-                  )}
+                  {gridType === 'youtuber' && <Youtube className="w-5 h-5 text-red-500 group-hover/link:scale-110 transition-transform" />}
+                  {gridType === 'crypto' && <Wallet className="w-4 h-4 text-[#F7931A] group-hover/link:scale-110 transition-transform" />}
+                  {gridType === 'gaming' && <Twitch className="w-4 h-4 text-[#9146FF] group-hover/link:scale-110 transition-transform" />}
+                  {gridType === 'startup' && <Rocket className="w-4 h-4 text-[#10B981] group-hover/link:scale-110 transition-transform" />}
+                  {gridType === 'art' && <Palette className="w-4 h-4 text-[#EC4899] group-hover/link:scale-110 transition-transform" />}
+                  {gridType === 'standard' && <ArrowRight className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" />}
                 </a>
               </div>
               
@@ -1474,28 +1518,68 @@ export default function App() {
                     <Share2 className="w-5 h-5 text-white/70 group-hover:text-white" />
                   )}
                 </button>
-                {gridType === 'youtuber' ? (
+                {gridType === 'youtuber' && (
                   <a 
                     href={popupBlock.link} 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="flex-1 py-4 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all uppercase tracking-wide border border-white/10"
-                    style={{ 
-                      backgroundColor: '#272727',
-                    }}
+                    style={{ backgroundColor: '#272727' }}
                   >
                     Kanal Besuchen <Youtube className="w-5 h-5 text-red-500" />
                   </a>
-                ) : (
+                )}
+                {gridType === 'crypto' && (
                   <a 
                     href={popupBlock.link} 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="flex-1 py-4 text-black font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-white transition-all uppercase tracking-wide"
-                    style={{ 
-                      backgroundColor: activeCategory.color,
-                      boxShadow: `0 0 15px ${activeCategory.color}60`
-                    }}
+                    style={{ backgroundColor: activeCategory.color, boxShadow: `0 0 15px ${activeCategory.color}60` }}
+                  >
+                    Wallet Verbinden <Wallet className="w-5 h-5" />
+                  </a>
+                )}
+                {gridType === 'gaming' && (
+                  <a 
+                    href={popupBlock.link} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex-1 py-4 text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-white hover:text-black hover:shadow-[0_0_20px_rgba(145,70,255,0.8)] transition-all uppercase tracking-wide"
+                    style={{ backgroundColor: activeCategory.color, boxShadow: `inset 0 0 10px rgba(0,0,0,0.5)` }}
+                  >
+                    Mitspielen <Gamepad2 className="w-5 h-5" />
+                  </a>
+                )}
+                {gridType === 'startup' && (
+                  <a 
+                    href={popupBlock.link} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex-1 py-4 text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-[#10B981] hover:text-white transition-all uppercase tracking-wide border-2 border-[#10B981]"
+                    style={{ boxShadow: `0 0 15px ${activeCategory.color}30` }}
+                  >
+                    Produkt ansehen <Rocket className="w-5 h-5" />
+                  </a>
+                )}
+                {gridType === 'art' && (
+                  <a 
+                    href={popupBlock.link} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex-1 py-4 text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-white hover:text-black transition-all uppercase tracking-wide bg-gradient-to-r from-[#EC4899] to-[#8B5CF6]"
+                    style={{ boxShadow: `0 0 20px ${activeCategory.color}50` }}
+                  >
+                    Galerie Besuchen <Palette className="w-5 h-5" />
+                  </a>
+                )}
+                {gridType === 'standard' && (
+                  <a 
+                    href={popupBlock.link} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex-1 py-4 text-black font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-white transition-all uppercase tracking-wide"
+                    style={{ backgroundColor: activeCategory.color, boxShadow: `0 0 15px ${activeCategory.color}60` }}
                   >
                     Website Besuchen <ArrowRight className="w-5 h-5" />
                   </a>
