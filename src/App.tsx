@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { motion } from 'motion/react';
-import { MousePointerClick, Info, ArrowRight, CheckCircle2, X, ZoomIn, ZoomOut, Maximize, Plus, Minus, Volume2, VolumeX, Share2, Upload, LogIn, LogOut, ChevronDown, Youtube, Coins, Gamepad2, Rocket, Palette } from 'lucide-react';
+import { MousePointerClick, Info, ArrowRight, CheckCircle2, X, ZoomIn, ZoomOut, Maximize, Plus, Minus, Volume2, VolumeX, Share2, Upload, LogIn, LogOut, ChevronDown, Youtube, Coins, Gamepad2, Rocket, Palette, Play, ThumbsUp, MessageSquare } from 'lucide-react';
 import { db, auth, signInWithGoogle, logout, testConnection, handleFirestoreError } from './firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { collection, onSnapshot, setDoc, doc, updateDoc } from 'firebase/firestore';
@@ -130,11 +130,11 @@ export default function App() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Draw background
-    ctx.fillStyle = '#050B14';
+    ctx.fillStyle = gridType === 'youtuber' ? '#0F0F0F' : '#050B14';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // Draw grid lines
-    ctx.strokeStyle = '#1A2332';
+    ctx.strokeStyle = gridType === 'youtuber' ? '#282828' : '#1A2332';
     ctx.lineWidth = 0.5;
     for (let i = 0; i <= GRID_SIZE; i++) {
       ctx.beginPath();
@@ -1346,9 +1346,9 @@ export default function App() {
             </button>
             
             {/* Expanded Image Area */}
-            <div className="w-full h-64 sm:h-80 bg-[#050B14] relative flex items-center justify-center group border-b border-white/5">
+            <div className="w-full h-64 sm:h-80 bg-[#050B14] relative flex items-center justify-center group border-b border-white/5 overflow-hidden">
               {popupBlock.imageUrl ? (
-                <img src={popupBlock.imageUrl} alt={popupBlock.title} className="w-full h-full object-contain p-4" referrerPolicy="no-referrer" />
+                <img src={popupBlock.imageUrl} alt={popupBlock.title} className={gridType === 'youtuber' ? "w-full h-full object-cover" : "w-full h-full object-contain p-4"} referrerPolicy="no-referrer" />
               ) : (
                 <div 
                   className="w-full h-full opacity-30 pattern-dots" 
@@ -1356,6 +1356,20 @@ export default function App() {
                 ></div>
               )}
               
+              {gridType === 'youtuber' && (
+                <div className="absolute inset-0 flex flex-col justify-between pointer-events-none p-4">
+                   <div className="flex justify-end"></div>
+                   <div className="flex items-center justify-center flex-1">
+                     <div className="w-16 h-12 bg-red-600/90 rounded-2xl flex items-center justify-center shadow-lg backdrop-blur-sm shadow-[0_0_20px_rgba(255,0,0,0.4)]">
+                        <Play className="w-6 h-6 text-white ml-1 fill-white" />
+                     </div>
+                   </div>
+                   <div className="h-1 bg-white/20 w-full rounded-full overflow-hidden mt-auto mb-2">
+                     <div className="h-full bg-red-600 w-1/3"></div>
+                   </div>
+                </div>
+              )}
+
               <div className="absolute inset-0 bg-gradient-to-t from-[#0A101A] via-transparent to-transparent opacity-80 pointer-events-none" />
             </div>
             
@@ -1364,7 +1378,20 @@ export default function App() {
               
               {/* Header: Title and Link */}
               <div className="flex flex-col gap-3">
-                <h3 className="text-3xl font-black text-white leading-tight pr-8 tracking-tight">{popupBlock.title}</h3>
+                <div className="flex items-start justify-between gap-4">
+                  <h3 className="text-3xl font-black text-white leading-tight tracking-tight">{popupBlock.title}</h3>
+                  {gridType === 'youtuber' && (
+                    <div className="flex bg-white/10 rounded-full overflow-hidden mt-1 shrink-0">
+                      <div className="px-3 py-1.5 flex items-center gap-1.5 border-r border-white/10 hover:bg-white/20 transition-colors">
+                        <ThumbsUp className="w-4 h-4 text-white" />
+                        <span className="text-xs font-bold text-white">Like</span>
+                      </div>
+                      <div className="px-3 py-1.5 flex items-center hover:bg-white/20 transition-colors">
+                         <MessageSquare className="w-4 h-4 text-white" />
+                      </div>
+                    </div>
+                  )}
+                </div>
                 <a 
                   href={popupBlock.link} 
                   target="_blank" 
@@ -1379,7 +1406,11 @@ export default function App() {
                       borderColor: `${activeCategory.color}30` 
                     }}
                   >{popupBlock.link}</span>
-                  <ArrowRight className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" />
+                  {gridType === 'youtuber' ? (
+                     <Youtube className="w-5 h-5 text-red-500 group-hover/link:scale-110 transition-transform" />
+                  ) : (
+                    <ArrowRight className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" />
+                  )}
                 </a>
               </div>
               
@@ -1443,18 +1474,32 @@ export default function App() {
                     <Share2 className="w-5 h-5 text-white/70 group-hover:text-white" />
                   )}
                 </button>
-                <a 
-                  href={popupBlock.link} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex-1 py-4 text-black font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-white transition-all uppercase tracking-wide"
-                  style={{ 
-                    backgroundColor: activeCategory.color,
-                    boxShadow: `0 0 15px ${activeCategory.color}60`
-                  }}
-                >
-                  Website Besuchen <ArrowRight className="w-5 h-5" />
-                </a>
+                {gridType === 'youtuber' ? (
+                  <a 
+                    href={popupBlock.link} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex-1 py-4 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all uppercase tracking-wide border border-white/10"
+                    style={{ 
+                      backgroundColor: '#272727',
+                    }}
+                  >
+                    Kanal Besuchen <Youtube className="w-5 h-5 text-red-500" />
+                  </a>
+                ) : (
+                  <a 
+                    href={popupBlock.link} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex-1 py-4 text-black font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-white transition-all uppercase tracking-wide"
+                    style={{ 
+                      backgroundColor: activeCategory.color,
+                      boxShadow: `0 0 15px ${activeCategory.color}60`
+                    }}
+                  >
+                    Website Besuchen <ArrowRight className="w-5 h-5" />
+                  </a>
+                )}
               </div>
             </div>
           </motion.div>
