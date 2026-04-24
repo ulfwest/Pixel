@@ -713,40 +713,6 @@ export default function App() {
         </div>
       </section>
 
-      {/* Grid Switcher */}
-      <div className="flex justify-center pt-16 pb-4">
-        <div className="flex flex-col items-center">
-          <p className="text-white text-sm uppercase tracking-[0.2em] font-bold mb-4 drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">Wähle dein Raster</p>
-          <div className="flex flex-wrap justify-center items-center gap-1 sm:gap-2 max-w-4xl mx-auto bg-[#0A101A] border-2 border-white/10 rounded-[2rem] p-2 shadow-[0_0_20px_rgba(0,0,0,0.5)] relative">
-            {GRID_CATEGORIES.map(category => {
-              const Icon = category.icon;
-              const isActive = gridType === category.id;
-              
-              let activeStyle = '';
-              if (isActive) {
-                if (category.id === 'standard') activeStyle = 'bg-[#00F0FF] text-black shadow-[0_0_20px_rgba(0,240,255,0.5)]';
-                else if (category.id === 'youtuber') activeStyle = 'bg-[#FF0000] text-white shadow-[0_0_20px_rgba(255,0,0,0.5)]';
-                else if (category.id === 'crypto') activeStyle = 'bg-[#F7931A] text-black shadow-[0_0_20px_rgba(247,147,26,0.5)]';
-                else if (category.id === 'gaming') activeStyle = 'bg-[#9146FF] text-white shadow-[0_0_20px_rgba(145,70,255,0.5)]';
-                else if (category.id === 'startup') activeStyle = 'bg-[#10B981] text-white shadow-[0_0_20px_rgba(16,185,129,0.5)]';
-                else if (category.id === 'art') activeStyle = 'bg-[#EC4899] text-white shadow-[0_0_20px_rgba(236,72,153,0.5)]';
-              }
-
-              return (
-                <button 
-                  key={category.id}
-                  onClick={() => setGridType(category.id as GridCategory)}
-                  className={`flex items-center gap-2 px-5 py-2 sm:px-6 sm:py-2.5 rounded-full text-xs sm:text-sm md:text-base font-bold font-mono transition-all duration-300 uppercase tracking-widest z-10 relative ${isActive ? activeStyle : 'text-white/60 hover:text-white hover:bg-white/5'}`}
-                >
-                  {Icon && <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${isActive ? (['standard', 'crypto'].includes(category.id) ? 'text-black' : 'text-white') : 'text-current'}`} />}
-                  {category.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
       {/* Stats Marquee */}
       <div className="py-8 overflow-hidden flex whitespace-nowrap">
         <motion.div 
@@ -860,20 +826,53 @@ export default function App() {
         </div>
       </section>
 
+      {/* Grid Switcher */}
+      <div className="flex justify-center pt-8 pb-8" id="grid">
+        <div className="flex flex-col items-center">
+          <h2 
+            className="text-3xl font-bold tracking-tight transition-colors duration-300 mb-6"
+            style={{ 
+              color: activeCategory.color, 
+              textShadow: `0 0 10px ${activeCategory.color}80` 
+            }}
+          >
+            Wähle dein Raster
+          </h2>
+          <div className="flex flex-wrap justify-center items-center gap-1 sm:gap-2 max-w-4xl mx-auto bg-[#0A101A] border-2 border-white/10 rounded-[2rem] p-2 shadow-[0_0_20px_rgba(0,0,0,0.5)] relative">
+            {GRID_CATEGORIES.map(category => {
+              const Icon = category.icon;
+              const isActive = gridType === category.id;
+              
+              let activeStyle = '';
+              if (isActive) {
+                if (category.id === 'standard') activeStyle = 'bg-[#00F0FF] text-black shadow-[0_0_20px_rgba(0,240,255,0.5)]';
+                else if (category.id === 'youtuber') activeStyle = 'bg-[#FF0000] text-white shadow-[0_0_20px_rgba(255,0,0,0.5)]';
+                else if (category.id === 'crypto') activeStyle = 'bg-[#F7931A] text-black shadow-[0_0_20px_rgba(247,147,26,0.5)]';
+                else if (category.id === 'gaming') activeStyle = 'bg-[#9146FF] text-white shadow-[0_0_20px_rgba(145,70,255,0.5)]';
+                else if (category.id === 'startup') activeStyle = 'bg-[#10B981] text-white shadow-[0_0_20px_rgba(16,185,129,0.5)]';
+                else if (category.id === 'art') activeStyle = 'bg-[#EC4899] text-white shadow-[0_0_20px_rgba(236,72,153,0.5)]';
+              }
+
+              return (
+                <button 
+                  key={category.id}
+                  onClick={() => setGridType(category.id as GridCategory)}
+                  className={`flex items-center gap-2 px-5 py-2 sm:px-6 sm:py-2.5 rounded-full text-xs sm:text-sm md:text-base font-bold font-mono transition-all duration-300 uppercase tracking-widest z-10 relative ${isActive ? activeStyle : 'text-white/60 hover:text-white hover:bg-white/5'}`}
+                >
+                  {Icon && <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${isActive ? (['standard', 'crypto'].includes(category.id) ? 'text-black' : 'text-white') : 'text-current'}`} />}
+                  {category.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
       {/* Grid Section */}
-      <section id="grid" className="py-24 px-6">
+      <section className="pb-12 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
             <div className="flex items-center gap-4">
-              <h2 
-                className="text-3xl font-bold tracking-tight transition-colors duration-300"
-                style={{ 
-                  color: activeCategory.color, 
-                  textShadow: `0 0 10px ${activeCategory.color}80` 
-                }}
-              >
-                Das Raster
-              </h2>
               <div 
                 className="px-4 py-1.5 rounded-full backdrop-blur-sm text-sm font-bold tracking-widest uppercase flex items-center gap-2 transition-all duration-300"
                 style={{ 
