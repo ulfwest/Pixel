@@ -731,7 +731,7 @@ export default function App() {
               </a>
               <div className="relative group/donate">
                 <div className="absolute -top-3 -right-3 rotate-12 bg-rose-500 text-white text-[10px] uppercase font-black px-2 py-1 rounded-full shadow-[0_0_15px_rgba(244,63,94,0.6)] animate-pulse z-10 whitespace-nowrap">Hilf der Community!</div>
-                <a href="https://www.paypal.com/pool/9oqXETlyIR?sr=wccr" target="_blank" rel="noopener noreferrer" className="relative px-8 py-4 bg-[#0070BA] text-white font-bold rounded-full hover:bg-[#003087] shadow-[0_0_20px_rgba(0,112,186,0.3)] group-hover/donate:shadow-[0_0_30px_rgba(0,112,186,0.7)] group-hover/donate:-translate-y-1 transition-all flex items-center gap-2">
+                <a href="https://www.paypal.com/pool/9pqkf745iC?sr=wccr" target="_blank" rel="noopener noreferrer" className="relative px-8 py-4 bg-[#0070BA] text-white font-bold rounded-full hover:bg-[#003087] shadow-[0_0_20px_rgba(0,112,186,0.3)] group-hover/donate:shadow-[0_0_30px_rgba(0,112,186,0.7)] group-hover/donate:-translate-y-1 transition-all flex items-center gap-2">
                   Direkt spenden (ohne Pixel)
                 </a>
               </div>
@@ -1150,7 +1150,7 @@ export default function App() {
                   </button>
                 ) : !hasClickedDonate ? (
                   <a 
-                    href="https://www.paypal.com/pool/9oqXETlyIR?sr=wccr" 
+                    href="https://www.paypal.com/pool/9pqkf745iC?sr=wccr" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     onClick={() => setHasClickedDonate(true)}
@@ -1161,7 +1161,7 @@ export default function App() {
                 ) : (
                   <div className="space-y-3">
                     <a 
-                      href="https://www.paypal.com/pool/9oqXETlyIR?sr=wccr" 
+                      href="https://www.paypal.com/pool/9pqkf745iC?sr=wccr" 
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="w-full py-2 bg-[#0070BA]/30 hover:bg-[#0070BA]/50 text-white/80 rounded-lg flex items-center justify-center font-bold transition-colors gap-2 text-sm border border-[#0070BA]/50"
